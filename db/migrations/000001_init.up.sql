@@ -99,6 +99,9 @@ CREATE TABLE usage_agg_day (
 
 CREATE INDEX idx_agg_day_org ON usage_agg_day(org_id, window_start DESC);
 
+-- NULLS NOT DISTINCT (PG15+): treats NULL user_id/team_id as equal for uniqueness,
+-- so each (org, optional-user, optional-team) scope can have at most one policy row.
+-- The unique constraint also creates an implicit index, making a separate lookup index redundant.
 CREATE TABLE budget_policies (
     id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                 UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
@@ -108,7 +111,6 @@ CREATE TABLE budget_policies (
     max_cost_usd_day       NUMERIC(12, 8),
     max_tokens_hour        BIGINT,
     max_tokens_day         BIGINT,
-    max_concurrent_streams INT
+    max_concurrent_streams INT,
+    UNIQUE NULLS NOT DISTINCT (org_id, user_id, team_id)
 );
-
-CREATE INDEX idx_budget_policies_lookup ON budget_policies(org_id, user_id, team_id);
