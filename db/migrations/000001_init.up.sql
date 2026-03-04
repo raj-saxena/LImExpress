@@ -19,7 +19,8 @@ CREATE TABLE teams (
     org_id     UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
     name       TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE (org_id, name)
+    UNIQUE (org_id, name),
+    UNIQUE (org_id, id)  -- enables composite FK from child tables to enforce team belongs to same org
 );
 
 -- role: 'member' | 'org_admin'
@@ -28,9 +29,10 @@ CREATE TABLE teams (
 CREATE TABLE memberships (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     org_id  UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
-    team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
+    team_id UUID,
     role    TEXT NOT NULL DEFAULT 'member',
-    UNIQUE NULLS NOT DISTINCT (user_id, org_id, team_id)
+    UNIQUE NULLS NOT DISTINCT (user_id, org_id, team_id),
+    FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE CASCADE
 );
 
 -- status: 'active' | 'revoked'
@@ -38,13 +40,14 @@ CREATE TABLE virtual_keys (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id       UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
     user_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    team_id      UUID REFERENCES teams(id) ON DELETE SET NULL,
+    team_id      UUID,
     key_hash     TEXT NOT NULL UNIQUE,
     prefix       TEXT NOT NULL,           -- first 8 chars of plaintext for display
     status       TEXT NOT NULL DEFAULT 'active',
     created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     last_used_at TIMESTAMPTZ,
-    revoked_at   TIMESTAMPTZ
+    revoked_at   TIMESTAMPTZ,
+    FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE SET NULL (team_id)
 );
 
 CREATE INDEX idx_virtual_keys_user ON virtual_keys(user_id);
@@ -53,7 +56,7 @@ CREATE TABLE usage_events (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id          UUID NOT NULL REFERENCES orgs(id),
     user_id         UUID NOT NULL REFERENCES users(id),
-    team_id         UUID REFERENCES teams(id),
+    team_id         UUID,
     virtual_key_id  UUID NOT NULL REFERENCES virtual_keys(id),
     provider        TEXT NOT NULL,
     model           TEXT NOT NULL,
@@ -61,7 +64,8 @@ CREATE TABLE usage_events (
     output_tokens   INT NOT NULL DEFAULT 0,
     cost_usd        NUMERIC(12, 8) NOT NULL DEFAULT 0,
     conversation_id TEXT,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE SET NULL (team_id)
 );
 
 CREATE INDEX idx_usage_events_org_created ON usage_events(org_id, created_at DESC);
@@ -70,7 +74,7 @@ CREATE INDEX idx_usage_events_org_created ON usage_events(org_id, created_at DES
 CREATE TABLE usage_agg_hour (
     org_id        UUID NOT NULL REFERENCES orgs(id),
     user_id       UUID NOT NULL REFERENCES users(id),
-    team_id       UUID REFERENCES teams(id),
+    team_id       UUID,
     provider      TEXT NOT NULL,
     model         TEXT NOT NULL,
     window_start  TIMESTAMPTZ NOT NULL,   -- truncated to hour UTC
@@ -78,7 +82,8 @@ CREATE TABLE usage_agg_hour (
     output_tokens BIGINT NOT NULL DEFAULT 0,
     cost_usd      NUMERIC(14, 8) NOT NULL DEFAULT 0,
     request_count INT NOT NULL DEFAULT 0,
-    UNIQUE NULLS NOT DISTINCT (org_id, user_id, team_id, provider, model, window_start)
+    UNIQUE NULLS NOT DISTINCT (org_id, user_id, team_id, provider, model, window_start),
+    FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE SET NULL (team_id)
 );
 
 CREATE INDEX idx_agg_hour_org ON usage_agg_hour(org_id, window_start DESC);
@@ -86,7 +91,7 @@ CREATE INDEX idx_agg_hour_org ON usage_agg_hour(org_id, window_start DESC);
 CREATE TABLE usage_agg_day (
     org_id        UUID NOT NULL REFERENCES orgs(id),
     user_id       UUID NOT NULL REFERENCES users(id),
-    team_id       UUID REFERENCES teams(id),
+    team_id       UUID,
     provider      TEXT NOT NULL,
     model         TEXT NOT NULL,
     window_start  TIMESTAMPTZ NOT NULL,   -- truncated to day UTC
@@ -94,7 +99,8 @@ CREATE TABLE usage_agg_day (
     output_tokens BIGINT NOT NULL DEFAULT 0,
     cost_usd      NUMERIC(14, 8) NOT NULL DEFAULT 0,
     request_count INT NOT NULL DEFAULT 0,
-    UNIQUE NULLS NOT DISTINCT (org_id, user_id, team_id, provider, model, window_start)
+    UNIQUE NULLS NOT DISTINCT (org_id, user_id, team_id, provider, model, window_start),
+    FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE SET NULL (team_id)
 );
 
 CREATE INDEX idx_agg_day_org ON usage_agg_day(org_id, window_start DESC);
@@ -103,12 +109,13 @@ CREATE TABLE budget_policies (
     id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id                 UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
     user_id                UUID REFERENCES users(id) ON DELETE CASCADE,
-    team_id                UUID REFERENCES teams(id) ON DELETE CASCADE,
+    team_id                UUID,
     max_cost_usd_hour      NUMERIC(12, 8),
     max_cost_usd_day       NUMERIC(12, 8),
     max_tokens_hour        BIGINT,
     max_tokens_day         BIGINT,
-    max_concurrent_streams INT
+    max_concurrent_streams INT,
+    FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_budget_policies_lookup ON budget_policies(org_id, user_id, team_id);
