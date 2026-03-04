@@ -51,10 +51,10 @@ CREATE INDEX idx_virtual_keys_user ON virtual_keys(user_id);
 
 CREATE TABLE usage_events (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    org_id          UUID NOT NULL REFERENCES orgs(id),
-    user_id         UUID NOT NULL REFERENCES users(id),
-    team_id         UUID REFERENCES teams(id),
-    virtual_key_id  UUID NOT NULL REFERENCES virtual_keys(id),
+    org_id          UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
+    user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    team_id         UUID REFERENCES teams(id) ON DELETE SET NULL,
+    virtual_key_id  UUID NOT NULL REFERENCES virtual_keys(id) ON DELETE CASCADE,
     provider        TEXT NOT NULL,
     model           TEXT NOT NULL,
     input_tokens    INT NOT NULL DEFAULT 0,
@@ -68,9 +68,9 @@ CREATE INDEX idx_usage_events_org_created ON usage_events(org_id, created_at DES
 
 -- NULLS NOT DISTINCT: team_id NULL is a valid distinct key component (PG15+).
 CREATE TABLE usage_agg_hour (
-    org_id        UUID NOT NULL REFERENCES orgs(id),
-    user_id       UUID NOT NULL REFERENCES users(id),
-    team_id       UUID REFERENCES teams(id),
+    org_id        UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
+    user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    team_id       UUID REFERENCES teams(id) ON DELETE SET NULL,
     provider      TEXT NOT NULL,
     model         TEXT NOT NULL,
     window_start  TIMESTAMPTZ NOT NULL,   -- truncated to hour UTC
@@ -84,9 +84,9 @@ CREATE TABLE usage_agg_hour (
 CREATE INDEX idx_agg_hour_org ON usage_agg_hour(org_id, window_start DESC);
 
 CREATE TABLE usage_agg_day (
-    org_id        UUID NOT NULL REFERENCES orgs(id),
-    user_id       UUID NOT NULL REFERENCES users(id),
-    team_id       UUID REFERENCES teams(id),
+    org_id        UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
+    user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    team_id       UUID REFERENCES teams(id) ON DELETE SET NULL,
     provider      TEXT NOT NULL,
     model         TEXT NOT NULL,
     window_start  TIMESTAMPTZ NOT NULL,   -- truncated to day UTC
