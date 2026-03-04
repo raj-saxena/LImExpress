@@ -47,7 +47,6 @@ CREATE TABLE virtual_keys (
     revoked_at   TIMESTAMPTZ
 );
 
-CREATE INDEX idx_virtual_keys_hash ON virtual_keys(key_hash);
 CREATE INDEX idx_virtual_keys_user ON virtual_keys(user_id);
 
 CREATE TABLE usage_events (
