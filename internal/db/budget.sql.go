@@ -58,7 +58,7 @@ SELECT COALESCE(SUM(cost_usd), 0)::NUMERIC              AS cost_usd,
 FROM usage_agg_day
 WHERE org_id = $1
   AND user_id = $2
-  AND window_start = date_trunc('day', NOW() AT TIME ZONE 'UTC')
+  AND window_start = date_trunc('day', NOW() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
 `
 
 type GetCurrentWindowUsageDayParams struct {
@@ -87,7 +87,7 @@ SELECT COALESCE(SUM(cost_usd), 0)::NUMERIC              AS cost_usd,
 FROM usage_agg_hour
 WHERE org_id = $1
   AND user_id = $2
-  AND window_start = date_trunc('hour', NOW() AT TIME ZONE 'UTC')
+  AND window_start = date_trunc('hour', NOW() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
 `
 
 type GetCurrentWindowUsageHourParams struct {
@@ -115,7 +115,7 @@ SELECT COALESCE(SUM(cost_usd), 0)::NUMERIC              AS cost_usd,
 FROM usage_agg_day
 WHERE org_id = $1
   AND team_id = $2
-  AND window_start = date_trunc('day', NOW() AT TIME ZONE 'UTC')
+  AND window_start = date_trunc('day', NOW() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
 `
 
 type GetTeamWindowUsageDayParams struct {
@@ -141,7 +141,7 @@ SELECT COALESCE(SUM(cost_usd), 0)::NUMERIC              AS cost_usd,
 FROM usage_agg_hour
 WHERE org_id = $1
   AND team_id = $2
-  AND window_start = date_trunc('hour', NOW() AT TIME ZONE 'UTC')
+  AND window_start = date_trunc('hour', NOW() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
 `
 
 type GetTeamWindowUsageHourParams struct {
@@ -163,7 +163,7 @@ func (q *Queries) GetTeamWindowUsageHour(ctx context.Context, arg GetTeamWindowU
 
 const upsertUsageAggDay = `-- name: UpsertUsageAggDay :exec
 INSERT INTO usage_agg_day (org_id, user_id, team_id, provider, model, window_start, input_tokens, output_tokens, cost_usd, request_count)
-VALUES ($1, $2, $3, $4, $5, date_trunc('day', NOW() AT TIME ZONE 'UTC'), $6, $7, $8, 1)
+VALUES ($1, $2, $3, $4, $5, date_trunc('day', NOW() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC', $6, $7, $8, 1)
 ON CONFLICT (org_id, user_id, team_id, provider, model, window_start)
 DO UPDATE SET
     input_tokens  = usage_agg_day.input_tokens  + EXCLUDED.input_tokens,
@@ -199,7 +199,7 @@ func (q *Queries) UpsertUsageAggDay(ctx context.Context, arg UpsertUsageAggDayPa
 
 const upsertUsageAggHour = `-- name: UpsertUsageAggHour :exec
 INSERT INTO usage_agg_hour (org_id, user_id, team_id, provider, model, window_start, input_tokens, output_tokens, cost_usd, request_count)
-VALUES ($1, $2, $3, $4, $5, date_trunc('hour', NOW() AT TIME ZONE 'UTC'), $6, $7, $8, 1)
+VALUES ($1, $2, $3, $4, $5, date_trunc('hour', NOW() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC', $6, $7, $8, 1)
 ON CONFLICT (org_id, user_id, team_id, provider, model, window_start)
 DO UPDATE SET
     input_tokens  = usage_agg_hour.input_tokens  + EXCLUDED.input_tokens,
