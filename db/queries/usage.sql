@@ -4,16 +4,16 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 RETURNING id, created_at;
 
 -- name: GetDailyUsageByOrg :many
-SELECT window_start::DATE            AS day,
-       SUM(input_tokens)::BIGINT     AS input_tokens,
-       SUM(output_tokens)::BIGINT    AS output_tokens,
-       SUM(cost_usd)::NUMERIC(14, 8) AS cost_usd,
-       SUM(request_count)::INT       AS request_count
+SELECT (window_start AT TIME ZONE 'UTC')::DATE AS day,
+       SUM(input_tokens)::BIGINT              AS input_tokens,
+       SUM(output_tokens)::BIGINT             AS output_tokens,
+       SUM(cost_usd)::NUMERIC(14, 8)          AS cost_usd,
+       SUM(request_count)::INT                AS request_count
 FROM usage_agg_day
 WHERE org_id = $1
   AND window_start >= $2
   AND window_start <  $3
-GROUP BY window_start::DATE
+GROUP BY (window_start AT TIME ZONE 'UTC')::DATE
 ORDER BY day DESC;
 
 -- name: GetTopUsersByOrg :many

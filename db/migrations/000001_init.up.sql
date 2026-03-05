@@ -56,7 +56,7 @@ CREATE TABLE usage_events (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id          UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
     user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    team_id         UUID,
+    team_id         UUID REFERENCES teams(id) ON DELETE SET NULL,
     virtual_key_id  UUID NOT NULL REFERENCES virtual_keys(id) ON DELETE CASCADE,
     provider        TEXT NOT NULL,
     model           TEXT NOT NULL,
@@ -74,7 +74,7 @@ CREATE INDEX idx_usage_events_org_created ON usage_events(org_id, created_at DES
 CREATE TABLE usage_agg_hour (
     org_id        UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
     user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    team_id       UUID,
+    team_id       UUID REFERENCES teams(id) ON DELETE SET NULL,
     provider      TEXT NOT NULL,
     model         TEXT NOT NULL,
     window_start  TIMESTAMPTZ NOT NULL,   -- truncated to hour UTC
@@ -91,7 +91,7 @@ CREATE INDEX idx_agg_hour_org ON usage_agg_hour(org_id, window_start DESC);
 CREATE TABLE usage_agg_day (
     org_id        UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
     user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    team_id       UUID,
+    team_id       UUID REFERENCES teams(id) ON DELETE SET NULL,
     provider      TEXT NOT NULL,
     model         TEXT NOT NULL,
     window_start  TIMESTAMPTZ NOT NULL,   -- truncated to day UTC
@@ -118,6 +118,5 @@ CREATE TABLE budget_policies (
     max_tokens_hour        BIGINT,
     max_tokens_day         BIGINT,
     max_concurrent_streams INT,
-    UNIQUE NULLS NOT DISTINCT (org_id, user_id, team_id),
-    FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE CASCADE
+    UNIQUE NULLS NOT DISTINCT (org_id, user_id, team_id)
 );
