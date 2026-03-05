@@ -32,7 +32,7 @@ type Querier interface {
 	ListKeysByOrg(ctx context.Context, orgID pgtype.UUID) ([]ListKeysByOrgRow, error)
 	ListVirtualKeysByUser(ctx context.Context, arg ListVirtualKeysByUserParams) ([]ListVirtualKeysByUserRow, error)
 	RevokeVirtualKey(ctx context.Context, arg RevokeVirtualKeyParams) error
-	UpdateVirtualKeyLastUsed(ctx context.Context, id pgtype.UUID) error
+	UpdateVirtualKeyLastUsed(ctx context.Context, arg UpdateVirtualKeyLastUsedParams) error
 	UpsertUsageAggDay(ctx context.Context, arg UpsertUsageAggDayParams) error
 	UpsertUsageAggHour(ctx context.Context, arg UpsertUsageAggHourParams) error
 	UpsertUser(ctx context.Context, email string) (User, error)

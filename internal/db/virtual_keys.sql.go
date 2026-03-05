@@ -233,10 +233,15 @@ func (q *Queries) RevokeVirtualKey(ctx context.Context, arg RevokeVirtualKeyPara
 const updateVirtualKeyLastUsed = `-- name: UpdateVirtualKeyLastUsed :exec
 UPDATE virtual_keys
 SET last_used_at = NOW()
-WHERE id = $1
+WHERE id = $1 AND org_id = $2
 `
 
-func (q *Queries) UpdateVirtualKeyLastUsed(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, updateVirtualKeyLastUsed, id)
+type UpdateVirtualKeyLastUsedParams struct {
+	ID    pgtype.UUID `db:"id" json:"id"`
+	OrgID pgtype.UUID `db:"org_id" json:"org_id"`
+}
+
+func (q *Queries) UpdateVirtualKeyLastUsed(ctx context.Context, arg UpdateVirtualKeyLastUsedParams) error {
+	_, err := q.db.Exec(ctx, updateVirtualKeyLastUsed, arg.ID, arg.OrgID)
 	return err
 }
