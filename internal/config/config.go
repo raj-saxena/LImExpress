@@ -104,18 +104,45 @@ func Load() (*Config, error) {
 	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, fmt.Errorf("unmarshalling config: %w", err)
 	}
+
+	if err := cfg.Validate(); err != nil {
+		return nil, fmt.Errorf("validating config: %w", err)
+	}
+
 	return &cfg, nil
 }
 
-// LogSummary logs non-sensitive config fields at INFO level.
-func (c *Config) LogSummary() {
-	logger, err := zap.NewProduction()
-	if err != nil {
-		fmt.Println("failed to create logger for config summary:", err)
-		return
+// Validate ensures the config has all required fields.
+func (c *Config) Validate() error {
+	if c.DB.DSN == "" {
+		return fmt.Errorf("db.dsn is required")
 	}
-	defer logger.Sync() //nolint:errcheck
+	if c.Server.Port == 0 {
+		return fmt.Errorf("server.port must be greater than 0")
+	}
+	return nil
+}
 
+// NewLogger returns a configured zap logger based on the config.
+func (c *Config) NewLogger() (*zap.Logger, error) {
+	var zapCfg zap.Config
+	if c.Log.Level == "debug" {
+		zapCfg = zap.NewDevelopmentConfig()
+	} else {
+		zapCfg = zap.NewProductionConfig()
+	}
+
+	// Override log level from config
+	level, err := zap.ParseAtomicLevel(c.Log.Level)
+	if err == nil {
+		zapCfg.Level = level
+	}
+
+	return zapCfg.Build()
+}
+
+// LogSummary logs non-sensitive config fields at INFO level.
+func (c *Config) LogSummary(logger *zap.Logger) {
 	logger.Info("config loaded",
 		zap.Int("server.port", c.Server.Port),
 		zap.Duration("server.read_timeout", c.Server.ReadTimeout),
