@@ -1,6 +1,7 @@
 module github.com/limexpress/gateway
 
-go 1.25.5
+go 1.25
+toolchain go1.25.5
 
 require (
 	github.com/jackc/pgx/v5 v5.8.0
