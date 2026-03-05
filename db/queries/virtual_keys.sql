@@ -6,7 +6,7 @@ WHERE key_hash = $1;
 -- name: UpdateVirtualKeyLastUsed :exec
 UPDATE virtual_keys
 SET last_used_at = NOW()
-WHERE id = $1;
+WHERE id = $1 AND org_id = $2;
 
 -- name: RevokeVirtualKey :exec
 UPDATE virtual_keys

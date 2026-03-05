@@ -20,11 +20,7 @@ CREATE TABLE teams (
     name       TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (org_id, name),
-<<<<<<< copilot/sub-pr-1-another-one
-    UNIQUE (org_id, id)
-=======
     UNIQUE (org_id, id)  -- enables composite FK from child tables to enforce team belongs to same org
->>>>>>> chore/foundation
 );
 
 -- role: 'member' | 'org_admin'
@@ -39,6 +35,8 @@ CREATE TABLE memberships (
     FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE CASCADE
 );
 
+CREATE INDEX idx_memberships_user ON memberships(user_id);
+
 -- status: 'active' | 'revoked'
 CREATE TABLE virtual_keys (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -47,28 +45,22 @@ CREATE TABLE virtual_keys (
     team_id      UUID,
     key_hash     TEXT NOT NULL UNIQUE,
     prefix       TEXT NOT NULL,           -- first 8 chars of plaintext for display
-    status       TEXT NOT NULL DEFAULT 'active',
+    status       TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'revoked')),
     created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     last_used_at TIMESTAMPTZ,
     revoked_at   TIMESTAMPTZ,
-<<<<<<< copilot/sub-pr-1-another-one
-    FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE SET NULL
-=======
     FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE SET NULL (team_id)
->>>>>>> chore/foundation
 );
 
 CREATE INDEX idx_virtual_keys_user ON virtual_keys(user_id);
+CREATE INDEX idx_virtual_keys_org_created ON virtual_keys(org_id, created_at DESC);
+CREATE INDEX idx_virtual_keys_org_user_created ON virtual_keys(org_id, user_id, created_at DESC);
 
 CREATE TABLE usage_events (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id          UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
     user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-<<<<<<< copilot/sub-pr-1-another-one
     team_id         UUID,
-=======
-    team_id         UUID REFERENCES teams(id) ON DELETE SET NULL,
->>>>>>> chore/foundation
     virtual_key_id  UUID NOT NULL REFERENCES virtual_keys(id) ON DELETE CASCADE,
     provider        TEXT NOT NULL,
     model           TEXT NOT NULL,
@@ -77,11 +69,7 @@ CREATE TABLE usage_events (
     cost_usd        NUMERIC(12, 8) NOT NULL DEFAULT 0,
     conversation_id TEXT,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-<<<<<<< copilot/sub-pr-1-another-one
-    FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE SET NULL
-=======
     FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE SET NULL (team_id)
->>>>>>> chore/foundation
 );
 
 CREATE INDEX idx_usage_events_org_created ON usage_events(org_id, created_at DESC);
@@ -90,11 +78,7 @@ CREATE INDEX idx_usage_events_org_created ON usage_events(org_id, created_at DES
 CREATE TABLE usage_agg_hour (
     org_id        UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
     user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-<<<<<<< copilot/sub-pr-1-another-one
     team_id       UUID,
-=======
-    team_id       UUID REFERENCES teams(id) ON DELETE SET NULL,
->>>>>>> chore/foundation
     provider      TEXT NOT NULL,
     model         TEXT NOT NULL,
     window_start  TIMESTAMPTZ NOT NULL,   -- truncated to hour UTC
@@ -103,11 +87,7 @@ CREATE TABLE usage_agg_hour (
     cost_usd      NUMERIC(14, 8) NOT NULL DEFAULT 0,
     request_count INT NOT NULL DEFAULT 0,
     UNIQUE NULLS NOT DISTINCT (org_id, user_id, team_id, provider, model, window_start),
-<<<<<<< copilot/sub-pr-1-another-one
-    FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE SET NULL
-=======
     FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE SET NULL (team_id)
->>>>>>> chore/foundation
 );
 
 CREATE INDEX idx_agg_hour_org ON usage_agg_hour(org_id, window_start DESC);
@@ -115,11 +95,7 @@ CREATE INDEX idx_agg_hour_org ON usage_agg_hour(org_id, window_start DESC);
 CREATE TABLE usage_agg_day (
     org_id        UUID NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
     user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-<<<<<<< copilot/sub-pr-1-another-one
     team_id       UUID,
-=======
-    team_id       UUID REFERENCES teams(id) ON DELETE SET NULL,
->>>>>>> chore/foundation
     provider      TEXT NOT NULL,
     model         TEXT NOT NULL,
     window_start  TIMESTAMPTZ NOT NULL,   -- truncated to day UTC
@@ -128,11 +104,7 @@ CREATE TABLE usage_agg_day (
     cost_usd      NUMERIC(14, 8) NOT NULL DEFAULT 0,
     request_count INT NOT NULL DEFAULT 0,
     UNIQUE NULLS NOT DISTINCT (org_id, user_id, team_id, provider, model, window_start),
-<<<<<<< copilot/sub-pr-1-another-one
-    FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE SET NULL
-=======
     FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE SET NULL (team_id)
->>>>>>> chore/foundation
 );
 
 CREATE INDEX idx_agg_day_org ON usage_agg_day(org_id, window_start DESC);
@@ -150,10 +122,6 @@ CREATE TABLE budget_policies (
     max_tokens_hour        BIGINT,
     max_tokens_day         BIGINT,
     max_concurrent_streams INT,
-<<<<<<< copilot/sub-pr-1-another-one
     UNIQUE NULLS NOT DISTINCT (org_id, user_id, team_id),
     FOREIGN KEY (org_id, team_id) REFERENCES teams(org_id, id) ON DELETE CASCADE
-=======
-    UNIQUE NULLS NOT DISTINCT (org_id, user_id, team_id)
->>>>>>> chore/foundation
 );

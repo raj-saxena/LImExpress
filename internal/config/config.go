@@ -109,7 +109,11 @@ func Load() (*Config, error) {
 
 // LogSummary logs non-sensitive config fields at INFO level.
 func (c *Config) LogSummary() {
-	logger, _ := zap.NewProduction()
+	logger, err := zap.NewProduction()
+	if err != nil {
+		fmt.Println("failed to create logger for config summary:", err)
+		return
+	}
 	defer logger.Sync() //nolint:errcheck
 
 	logger.Info("config loaded",
