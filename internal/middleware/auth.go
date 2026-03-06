@@ -80,7 +80,10 @@ func VirtualKeyAuth(q db.Querier) func(http.Handler) http.Handler {
 			// Fire-and-forget: update last-used timestamp.
 			// We do not block or fail the request on accounting errors.
 			go func() {
-				_ = q.UpdateVirtualKeyLastUsed(context.Background(), keyRow.ID)
+				_ = q.UpdateVirtualKeyLastUsed(context.Background(), db.UpdateVirtualKeyLastUsedParams{
+					ID:    keyRow.ID,
+					OrgID: keyRow.OrgID,
+				})
 			}()
 
 			kac := &KeyAuthContext{
