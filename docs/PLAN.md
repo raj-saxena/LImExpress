@@ -18,7 +18,7 @@
 | M2-T1 | Google Workspace OIDC login | ✅ Done | PR #11 merged |
 | M2-T2 | Multi-org context middleware | 🔄 In review | PR #22 |
 | M2-T3 | Key lifecycle endpoints | 🔲 Not started | — |
-| M2-T4 | Dashboard data endpoints | 🔲 Not started | — |
+| M2-T4 | Dashboard data endpoints | 🔄 In review | `feature/e10-dashboard-api` |
 | M2-T5 | Portal shell + navigation | 🔄 In review | PR #24 |
 | M2-T6 | Login / logout UI | 🔲 Not started | — |
 | M2-T7 | Key management UI | 🔲 Not started | — |

@@ -61,3 +61,8 @@ This keeps sessions resumable without losing context. If a decision affects anot
 - What: Callback rejects Google accounts where `email_verified` is false.
 - Why: Prevents unverified Google accounts from gaining portal access.
 - Impact: All portal users must have verified Google email.
+
+**2026-03-06 — Dashboard wrappers use portal org context, not client-provided org IDs**
+- What: Added `/portal/usage/daily`, `/portal/usage/top-users`, `/portal/usage/top-models` that derive `org_id` only from authenticated portal context and forward date/limit filters.
+- Why: Prevents cross-org leakage by removing any caller control over organization scope.
+- Impact: Frontend agents can build M2-T8 against stable portal-scoped data endpoints without reimplementing tenant-safety checks client-side.
