@@ -2,14 +2,19 @@ package main
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.uber.org/zap"
+
 	"github.com/limexpress/gateway/internal/config"
 	"github.com/limexpress/gateway/internal/db"
-	"go.uber.org/zap"
+	"github.com/limexpress/gateway/internal/metrics"
 )
 
 func main() {
@@ -18,12 +23,12 @@ func main() {
 
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("failed to load config: %v", err)
+		panic(fmt.Sprintf("failed to load config: %v", err))
 	}
 
-	logger, err := cfg.NewLogger()
+	logger, err := metrics.New(cfg.Log.Level)
 	if err != nil {
-		log.Fatalf("failed to initialize logger: %v", err)
+		panic(fmt.Sprintf("failed to initialise logger: %v", err))
 	}
 	defer logger.Sync() //nolint:errcheck
 
@@ -37,5 +42,19 @@ func main() {
 	}
 	defer pool.Close()
 
-	logger.Info("foundation established; ready for gateway components")
+	r := chi.NewRouter()
+	r.Get("/metrics", promhttp.Handler().ServeHTTP)
+	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	addr := fmt.Sprintf(":%d", cfg.Server.Port)
+	logger.Info("gateway starting",
+		zap.String("addr", addr),
+		zap.String("log_level", cfg.Log.Level),
+	)
+
+	if err := http.ListenAndServe(addr, r); err != nil {
+		logger.Fatal("server error", zap.Error(err))
+	}
 }
