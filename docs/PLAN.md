@@ -14,12 +14,12 @@
 | M1-T3 | SSE streaming proxy | ✅ Done | PR #20 merged |
 | M1-T4 | Post-charge accounting | ✅ Done | PR #21 merged |
 | M1-T5 | Prometheus metrics + zap logging | ✅ Done | PR #10 merged |
-| M1-T6 | Analytics query endpoints | 🔲 Not started | — |
+| M1-T6 | Analytics query endpoints | 🔄 In review | PR #23 |
 | M2-T1 | Google Workspace OIDC login | ✅ Done | PR #11 merged |
-| M2-T2 | Multi-org context middleware | 🔲 Not started | — |
+| M2-T2 | Multi-org context middleware | 🔄 In review | PR #22 |
 | M2-T3 | Key lifecycle endpoints | 🔲 Not started | — |
 | M2-T4 | Dashboard data endpoints | 🔲 Not started | — |
-| M2-T5 | Portal shell + navigation | 🔄 In progress | `feature/e11-portal-shell-v2` |
+| M2-T5 | Portal shell + navigation | 🔄 In review | PR #24 |
 | M2-T6 | Login / logout UI | 🔲 Not started | — |
 | M2-T7 | Key management UI | 🔲 Not started | — |
 | M2-T8 | Usage dashboard UI | 🔲 Not started | — |
@@ -40,8 +40,8 @@
 
 ### Overall status
 - **M0 Foundation:** ✅ Complete (5/5).
-- **M1 Gateway Core:** ✅ 5/6 done (M1-T6 analytics endpoints pending).
-- **M2 Portal:** 🔄 2/8 done (OIDC + portal shell; key lifecycle, org context, UI work pending).
+- **M1 Gateway Core:** 🔄 5/6 done, 1 in review (M1-T6 PR #23).
+- **M2 Portal:** 🔄 2/8 done, 2 in review (M2-T2 PR #22, M2-T5 PR #24; key lifecycle, UI work pending).
 - **M3 Observability & Ops:** 🔲 Not started (0/4).
 - **M4 Hardening & Release:** 🔲 Not started (0/4).
 
