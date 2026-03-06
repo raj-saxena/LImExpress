@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,15 +8,13 @@ import (
 )
 
 func TestLoad(t *testing.T) {
-	// Clear env vars that might interfere
-	os.Unsetenv("LIMEXPRESS_DB_DSN")
-	os.Unsetenv("DB_DSN")
-	os.Unsetenv("LIMEXPRESS_SERVER_PORT")
+	// Ensure a clean baseline for all subtests; t.Setenv restores on cleanup.
+	t.Setenv("LIMEXPRESS_DB_DSN", "")
+	t.Setenv("DB_DSN", "")
+	t.Setenv("LIMEXPRESS_SERVER_PORT", "")
 
 	t.Run("default values", func(t *testing.T) {
-		// We need to provide a DSN for validation to pass
-		os.Setenv("DB_DSN", "postgres://localhost:5432/test")
-		defer os.Unsetenv("DB_DSN")
+		t.Setenv("DB_DSN", "postgres://localhost:5432/test")
 
 		cfg, err := Load()
 		require.NoError(t, err)
@@ -28,10 +25,8 @@ func TestLoad(t *testing.T) {
 	})
 
 	t.Run("env overrides", func(t *testing.T) {
-		os.Setenv("LIMEXPRESS_SERVER_PORT", "9090")
-		os.Setenv("DB_DSN", "postgres://localhost:5432/env")
-		defer os.Unsetenv("LIMEXPRESS_SERVER_PORT")
-		defer os.Unsetenv("DB_DSN")
+		t.Setenv("LIMEXPRESS_SERVER_PORT", "9090")
+		t.Setenv("DB_DSN", "postgres://localhost:5432/env")
 
 		cfg, err := Load()
 		require.NoError(t, err)
@@ -41,8 +36,8 @@ func TestLoad(t *testing.T) {
 	})
 
 	t.Run("validation failure", func(t *testing.T) {
-		os.Unsetenv("DB_DSN")
-		os.Unsetenv("LIMEXPRESS_DB_DSN")
+		t.Setenv("DB_DSN", "")
+		t.Setenv("LIMEXPRESS_DB_DSN", "")
 
 		cfg, err := Load()
 		assert.Error(t, err)

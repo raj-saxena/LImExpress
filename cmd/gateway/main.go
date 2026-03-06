@@ -37,8 +37,7 @@ func main() {
 	// Initialize DB pool
 	pool, err := db.NewPool(ctx, cfg.DB.DSN)
 	if err != nil {
-		logger.Error("failed to connect to database", zap.Error(err))
-		return
+		logger.Fatal("failed to connect to database", zap.Error(err))
 	}
 	defer pool.Close()
 
