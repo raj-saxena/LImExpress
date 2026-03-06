@@ -66,3 +66,8 @@ This keeps sessions resumable without losing context. If a decision affects anot
 - What: Added `/portal/usage/daily`, `/portal/usage/top-users`, `/portal/usage/top-models` that derive `org_id` only from authenticated portal context and forward date/limit filters.
 - Why: Prevents cross-org leakage by removing any caller control over organization scope.
 - Impact: Frontend agents can build M2-T8 against stable portal-scoped data endpoints without reimplementing tenant-safety checks client-side.
+
+**2026-03-06 — Portal key lifecycle endpoints are JSON API-first under `/portal/keys`**
+- What: Implemented `POST /portal/keys`, `GET /portal/keys`, and `DELETE /portal/keys/:id` as JSON endpoints with role enforcement (`org_admin` can create/revoke; members list only their own keys).
+- Why: This unblocks HTMX/server-rendered UI work while enforcing org isolation and immediate revoke semantics in one backend contract.
+- Impact: Frontend agents can call these endpoints directly for M2-T7; gateway auth reflects revocations immediately because key status is checked on each request.
