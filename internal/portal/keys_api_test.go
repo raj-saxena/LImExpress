@@ -218,15 +218,6 @@ func withPortalContext(req *http.Request, role string) *http.Request {
 	return req.WithContext(ctx)
 }
 
-func mustUUID(s string) pgtype.UUID {
-	var u pgtype.UUID
-	err := u.Scan(s)
-	if err != nil {
-		panic(err)
-	}
-	return u
-}
-
 func mustTS(s string) pgtype.Timestamptz {
 	t, err := time.Parse(time.RFC3339, s)
 	if err != nil {
