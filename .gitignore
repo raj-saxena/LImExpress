@@ -1,1 +1,11 @@
 .worktrees/
+bin/
+*.exe
+*.test
+*.prof
+*.out
+.env
+.idea/
+.vscode/
+.DS_Store
+.claude/settings.local.json
