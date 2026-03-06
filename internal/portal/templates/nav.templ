@@ -1,0 +1,21 @@
+package templates
+
+// Nav renders the top navigation bar.
+// userEmail is empty when the user is not authenticated.
+templ Nav(userEmail string) {
+	<nav class="navbar bg-base-100 shadow-lg">
+		<div class="navbar-start">
+			<a href="/portal" class="btn btn-ghost text-xl font-bold">LImExpress</a>
+		</div>
+		<div class="navbar-end">
+			if userEmail != "" {
+				<span class="text-sm text-base-content/70 mr-4">{ userEmail }</span>
+				<form method="POST" action="/auth/logout">
+					<button type="submit" class="btn btn-outline btn-sm">Sign out</button>
+				</form>
+			} else {
+				<a href="/auth/login" class="btn btn-primary btn-sm">Sign in</a>
+			}
+		</div>
+	</nav>
+}
