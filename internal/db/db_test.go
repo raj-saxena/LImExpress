@@ -89,4 +89,18 @@ func TestDB(t *testing.T) {
 		require.NoError(t, err)
 		assert.False(t, exists)
 	})
+
+	t.Run("MigrateUp after MigrateDown", func(t *testing.T) {
+		err = MigrateUp(connStr, migrationsPath)
+		require.NoError(t, err)
+
+		pool, err := NewPool(ctx, connStr)
+		require.NoError(t, err)
+		defer pool.Close()
+
+		var exists bool
+		err = pool.QueryRow(ctx, "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'orgs')").Scan(&exists)
+		require.NoError(t, err)
+		assert.True(t, exists)
+	})
 }

@@ -26,8 +26,10 @@ func NewPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 		return nil, fmt.Errorf("creating pool: %w", err)
 	}
 
-	// Verify the connection
-	if err := pool.Ping(ctx); err != nil {
+	// Verify the connection with a bounded timeout to avoid stalling startup.
+	pingCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	if err := pool.Ping(pingCtx); err != nil {
 		pool.Close()
 		return nil, fmt.Errorf("pinging db: %w", err)
 	}
