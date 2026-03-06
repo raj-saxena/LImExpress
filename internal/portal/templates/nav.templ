@@ -1,18 +1,65 @@
 package templates
 
-// Nav renders the top navigation bar.
+// Nav renders the top navigation bar with org switcher placeholder and mobile hamburger.
 // userEmail is empty when the user is not authenticated.
 templ Nav(userEmail string) {
-	<nav class="navbar bg-base-100 shadow-lg">
+	<nav class="navbar bg-base-100 shadow-lg px-4">
 		<div class="navbar-start">
+			<!-- Hamburger for mobile (checkbox-driven daisyUI drawer trigger) -->
+			<div class="dropdown lg:hidden">
+				<label tabindex="0" class="btn btn-ghost btn-circle">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+					</svg>
+				</label>
+				<ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+					<li><a href="/portal">Dashboard</a></li>
+					<li><a href="/portal/keys">API Keys</a></li>
+					<li><a href="/portal/usage">Usage</a></li>
+				</ul>
+			</div>
 			<a href="/portal" class="btn btn-ghost text-xl font-bold">LImExpress</a>
 		</div>
-		<div class="navbar-end">
+		<!-- Desktop nav links -->
+		<div class="navbar-center hidden lg:flex">
+			<ul class="menu menu-horizontal px-1 gap-1">
+				<li><a href="/portal" class="rounded-lg">Dashboard</a></li>
+				<li><a href="/portal/keys" class="rounded-lg">API Keys</a></li>
+				<li><a href="/portal/usage" class="rounded-lg">Usage</a></li>
+			</ul>
+		</div>
+		<div class="navbar-end gap-2">
 			if userEmail != "" {
-				<span class="text-sm text-base-content/70 mr-4">{ userEmail }</span>
-				<form method="POST" action="/auth/logout">
-					<button type="submit" class="btn btn-outline btn-sm">Sign out</button>
-				</form>
+				<!-- Org switcher placeholder — backend wiring deferred -->
+				<div class="dropdown dropdown-end">
+					<label tabindex="0" class="btn btn-ghost btn-sm normal-case font-medium">
+						Acme Corp
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+						</svg>
+					</label>
+					<ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-[1] mt-1">
+						<li class="menu-title"><span>Switch Organisation</span></li>
+						<li><a class="active">Acme Corp</a></li>
+						<li><a>— more coming soon —</a></li>
+					</ul>
+				</div>
+				<!-- User email + sign-out -->
+				<div class="dropdown dropdown-end">
+					<label tabindex="0" class="btn btn-ghost btn-circle avatar placeholder">
+						<div class="bg-primary text-primary-content rounded-full w-8">
+							<span class="text-xs">{ string([]rune(userEmail)[:1]) }</span>
+						</div>
+					</label>
+					<ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56 z-[1] mt-1">
+						<li class="menu-title"><span class="text-xs truncate">{ userEmail }</span></li>
+						<li>
+							<form method="POST" action="/auth/logout">
+								<button type="submit" class="w-full text-left">Sign out</button>
+							</form>
+						</li>
+					</ul>
+				</div>
 			} else {
 				<a href="/auth/login" class="btn btn-primary btn-sm">Sign in</a>
 			}

@@ -17,7 +17,11 @@ templ Base(title string, user string) {
 		</head>
 		<body class="min-h-screen bg-base-200">
 			@Nav(user)
-			<main class="container mx-auto px-4 py-8">
+			<!-- Flash message region: server-rendered flashes appear here via HTMX OOB or direct render -->
+			<div id="flash-region" class="container mx-auto px-4 pt-4 max-w-7xl">
+				<!-- Flash components are injected here by handlers using Flash(kind, msg) -->
+			</div>
+			<main class="container mx-auto px-4 py-6 max-w-7xl">
 				{ children... }
 			</main>
 		</body>

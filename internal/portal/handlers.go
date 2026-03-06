@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/limexpress/gateway/internal/portal/auth"
 	"github.com/limexpress/gateway/internal/portal/templates"
 )
 
@@ -21,11 +22,15 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 }
 
 // indexHandler renders the portal dashboard.
-// The authenticated user's email is not yet available (auth wired in a later task);
-// an empty string causes Nav to display the sign-in link instead.
+// It reads the authenticated user's email from the request context when available.
+// If no session exists (unauthenticated request), an empty string is passed and
+// Nav renders the sign-in link instead.
 func (h *Handler) indexHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO(auth): replace "" with the session user email once OIDC is wired.
-	component := templates.Index("")
+	userEmail := ""
+	if u, ok := auth.UserFromContext(r.Context()); ok {
+		userEmail = u.Email
+	}
+	component := templates.Index(userEmail)
 	if err := component.Render(r.Context(), w); err != nil {
 		http.Error(w, "render error", http.StatusInternalServerError)
 	}
