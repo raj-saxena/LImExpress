@@ -75,13 +75,31 @@ func TestConfig_Validate(t *testing.T) {
 			msg:     "db.dsn is required",
 		},
 		{
-			name: "invalid port",
+			name: "invalid port zero",
 			cfg: Config{
 				DB:     DBConfig{DSN: "dsn"},
 				Server: ServerConfig{Port: 0},
 			},
 			wantErr: true,
-			msg:     "server.port must be greater than 0",
+			msg:     "server.port must be between 1 and 65535",
+		},
+		{
+			name: "invalid port negative",
+			cfg: Config{
+				DB:     DBConfig{DSN: "dsn"},
+				Server: ServerConfig{Port: -1},
+			},
+			wantErr: true,
+			msg:     "server.port must be between 1 and 65535",
+		},
+		{
+			name: "invalid port too large",
+			cfg: Config{
+				DB:     DBConfig{DSN: "dsn"},
+				Server: ServerConfig{Port: 65536},
+			},
+			wantErr: true,
+			msg:     "server.port must be between 1 and 65535",
 		},
 	}
 
