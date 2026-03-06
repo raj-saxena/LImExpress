@@ -117,8 +117,8 @@ func (c *Config) Validate() error {
 	if c.DB.DSN == "" {
 		return fmt.Errorf("db.dsn is required")
 	}
-	if c.Server.Port == 0 {
-		return fmt.Errorf("server.port must be greater than 0")
+	if c.Server.Port <= 0 || c.Server.Port > 65535 {
+		return fmt.Errorf("server.port must be between 1 and 65535")
 	}
 	return nil
 }

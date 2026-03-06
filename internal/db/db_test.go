@@ -18,6 +18,9 @@ func TestDB(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test in short mode")
 	}
+	if os.Getenv("INTEGRATION_TESTS") != "1" {
+		t.Skip("skipping integration test because INTEGRATION_TESTS != 1")
+	}
 
 	ctx := context.Background()
 
