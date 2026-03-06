@@ -1,0 +1,27 @@
+package templates
+
+// Index is the portal home/dashboard shown after login.
+templ Index(userEmail string) {
+	@Base("Dashboard", userEmail) {
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+			@StatCard("API Keys", "—", "key")
+			@StatCard("Today's Cost", "$—", "chart-bar")
+			@StatCard("Requests Today", "—", "arrow-path")
+		</div>
+		<div class="card bg-base-100 shadow">
+			<div class="card-body">
+				<h2 class="card-title">Usage (last 30 days)</h2>
+				<p class="text-base-content/60">Data will appear here once you start making requests.</p>
+			</div>
+		</div>
+	}
+}
+
+// StatCard renders a single summary stat in a daisyUI stat box.
+// icon is a placeholder identifier; icon rendering can be wired in a later task.
+templ StatCard(label string, value string, icon string) {
+	<div class="stat bg-base-100 shadow rounded-box">
+		<div class="stat-title">{ label }</div>
+		<div class="stat-value text-primary">{ value }</div>
+	</div>
+}
