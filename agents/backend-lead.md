@@ -57,3 +57,36 @@ UI exists but you focus on API and core.
 ## Workflow
 - Use git worktrees per feature branch.
 - Keep PRs small and focused. Provide runnable instructions in README as you change things.
+## Capturing decisions
+
+Whenever you make an important technical or design decision, append it to a `## Decisions` section at the bottom of this file before ending your session. Include:
+- **What** was decided
+- **Why** (rationale, alternatives considered)
+- **Impact** on other agents or future sessions
+
+This keeps sessions resumable without losing context. If a decision affects another agent's domain, note it here and flag it in `AGENTS.md`.
+
+## Decisions
+
+<!-- Append new decisions here as they are made. -->
+
+
+**2026-03-04 — Virtual key hashing: SHA-256 for DB lookup (not bcrypt)**
+- What: `key_hash` in DB is `hex(sha256(plaintext))`, not a bcrypt hash.
+- Why: bcrypt output is non-deterministic (random salt), so it cannot be used as a DB lookup key. SHA-256 is deterministic and O(1) to compute. The plaintext key has 256-bit entropy (32 random bytes), making SHA-256 preimage attacks infeasible.
+- Impact: `internal/keys/HashForLookup()` is the single point of truth. Never log this value.
+
+**2026-03-04 — DB pool: pgxpool with tuned defaults**
+- What: `db.NewPool()` sets MaxConns=25, MinConns=2, MaxConnLifetime=1h, MaxConnIdleTime=30m.
+- Why: pgx stdlib driver creates a new connection per request; pgxpool reuses connections and is required for production throughput.
+- Impact: All packages should accept `*pgxpool.Pool` and pass it to `db.New(pool)` for sqlc queries.
+
+**2026-03-04 — Schema: NULLS NOT DISTINCT for nullable composite unique keys**
+- What: `memberships`, `usage_agg_hour`, `usage_agg_day` use `UNIQUE NULLS NOT DISTINCT` instead of surrogate sentinel UUIDs.
+- Why: PG15+ supports this cleanly; repo targets PG18. Avoids sentinel UUID magic values.
+- Impact: ON CONFLICT clauses in budget upsert queries reference column list directly.
+
+**2026-03-04 — UpdateVirtualKeyLastUsed requires both ID and OrgID**
+- What: Refactor scoped the update query to `WHERE id = $1 AND org_id = $2`.
+- Why: Prevents cross-org last_used_at updates if an ID were ever guessed.
+- Impact: Call sites must pass `db.UpdateVirtualKeyLastUsedParams{ID: ..., OrgID: ...}`.

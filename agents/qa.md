@@ -31,3 +31,16 @@ Stack: Go tests + testify + httptest + testcontainers-go + vegeta.
 
 ## Workflow
 - Use git worktrees; coordinate DB schema assumptions with backend.
+## Capturing decisions
+
+Whenever you make an important technical or design decision, append it to a `## Decisions` section at the bottom of this file before ending your session. Include:
+- **What** was decided
+- **Why** (rationale, alternatives considered)
+- **Impact** on other agents or future sessions
+
+This keeps sessions resumable without losing context. If a decision affects another agent's domain, note it here and flag it in `AGENTS.md`.
+
+## Decisions
+
+<!-- Append new decisions here as they are made. -->
+

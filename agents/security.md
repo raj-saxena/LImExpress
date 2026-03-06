@@ -23,3 +23,16 @@ No content logging. Multi-org isolation. Budgets enforced at admission, post-cha
 
 ## Workflow
 - Use git worktrees; file focused PRs (docs or small code changes).
+## Capturing decisions
+
+Whenever you make an important technical or design decision, append it to a `## Decisions` section at the bottom of this file before ending your session. Include:
+- **What** was decided
+- **Why** (rationale, alternatives considered)
+- **Impact** on other agents or future sessions
+
+This keeps sessions resumable without losing context. If a decision affects another agent's domain, note it here and flag it in `AGENTS.md`.
+
+## Decisions
+
+<!-- Append new decisions here as they are made. -->
+

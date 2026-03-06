@@ -33,3 +33,31 @@ Stack: Go + chi, viper, pgx+sqlc, golang-migrate/migrate, zap, Prometheus.
 - Integration tests for OIDC handler logic where feasible (mock IdP) and DB operations with testcontainers.
 - Keep it simple; no over-engineered RBAC framework.
 - Use git worktrees per task.
+## Capturing decisions
+
+Whenever you make an important technical or design decision, append it to a `## Decisions` section at the bottom of this file before ending your session. Include:
+- **What** was decided
+- **Why** (rationale, alternatives considered)
+- **Impact** on other agents or future sessions
+
+This keeps sessions resumable without losing context. If a decision affects another agent's domain, note it here and flag it in `AGENTS.md`.
+
+## Decisions
+
+<!-- Append new decisions here as they are made. -->
+
+
+**2026-03-04 — Tailwind/daisyUI/HTMX loaded via CDN for MVP**
+- What: No local asset pipeline; all three loaded from jsDelivr/unpkg CDNs.
+- Why: Avoids npm/build toolchain complexity for the MVP iteration.
+- Impact: When moving to production, replace CDN links with self-hosted assets for CSP compliance.
+
+**2026-03-04 — daisyUI theme: `corporate`**
+- What: `data-theme="corporate"` set on `<html>` in the base layout.
+- Why: Clean, professional look suitable for a developer tool; easy to override later.
+- Impact: Any custom component must use daisyUI semantic color tokens (not hardcoded hex).
+
+**2026-03-04 — Auth injection point in handlers marked with TODO**
+- What: `handlers.go` passes empty email string; `TODO(auth)` comment marks the injection point.
+- Why: OIDC middleware (M2-T1) is on a separate branch; decoupled for parallel development.
+- Impact: M2-T6 (login UI wiring) must replace the placeholder with session-sourced user email.
