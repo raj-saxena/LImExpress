@@ -42,23 +42,23 @@ func Index(userEmail string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"grid grid-cols-1 md:grid-cols-3 gap-4 mb-8\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"mb-6\"><h1 class=\"text-2xl font-bold text-base-content\">Dashboard</h1><p class=\"text-base-content/60 text-sm mt-1\">Overview of your LImExpress usage</p></div><div class=\"stats stats-vertical lg:stats-horizontal shadow w-full mb-8 bg-base-100\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = StatCard("API Keys", "—", "key").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = StatCard("API Keys", "\u2014", "key").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = StatCard("Today's Cost", "$—", "chart-bar").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = StatCard("Today\u2019s Cost", "$\u2014", "chart-bar").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = StatCard("Requests Today", "—", "arrow-path").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = StatCard("Requests Today", "\u2014", "arrow-path").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"card bg-base-100 shadow\"><div class=\"card-body\"><h2 class=\"card-title\">Usage (last 30 days)</h2><p class=\"text-base-content/60\">Data will appear here once you start making requests.</p></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"card bg-base-100 shadow\"><div class=\"card-body\"><h2 class=\"card-title text-lg\">Usage \u2014 last 30 days</h2><p class=\"text-base-content/60 text-sm mb-4\">Data will appear here once you start making requests.</p><div class=\"w-full h-40 bg-base-200 rounded-lg flex items-center justify-center\"><span class=\"text-base-content/30 text-sm\">Chart coming soon</span></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -72,7 +72,8 @@ func Index(userEmail string) templ.Component {
 	})
 }
 
-// StatCard renders a single summary stat in a daisyUI stat box.
+// StatCard renders a single daisyUI stat child element.
+// Must be placed inside a <div class="stats"> wrapper (see Index above).
 // icon is a placeholder identifier; icon rendering can be wired in a later task.
 func StatCard(label string, value string, icon string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -95,14 +96,14 @@ func StatCard(label string, value string, icon string) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"stat bg-base-100 shadow rounded-box\"><div class=\"stat-title\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"stat\"><div class=\"stat-title\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/index.templ`, Line: 24, Col: 33}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/index.templ`, Line: 39, Col: 33}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -115,13 +116,13 @@ func StatCard(label string, value string, icon string) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(value)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/index.templ`, Line: 25, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/index.templ`, Line: 40, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><div class=\"stat-desc\">Updated just now</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
