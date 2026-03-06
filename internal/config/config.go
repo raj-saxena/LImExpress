@@ -16,6 +16,20 @@ type Config struct {
 	Pricing   map[string]ModelPrice
 	Budgets   BudgetDefaults
 	Log       LogConfig
+	OIDC      OIDCConfig    `mapstructure:"oidc"`
+	Session   SessionConfig `mapstructure:"session"`
+}
+
+// OIDCConfig holds Google Workspace OIDC credentials.
+type OIDCConfig struct {
+	ClientID     string `mapstructure:"client_id"`
+	ClientSecret string `mapstructure:"client_secret"`
+	RedirectURL  string `mapstructure:"redirect_url"`
+}
+
+// SessionConfig holds the cookie-signing secret.
+type SessionConfig struct {
+	Secret string `mapstructure:"secret"` // hex-encoded 32 bytes
 }
 
 type ServerConfig struct {
@@ -89,6 +103,12 @@ func Load() (*Config, error) {
 	_ = v.BindEnv("providers.openai.api_key", "OPENAI_API_KEY")
 	_ = v.BindEnv("db.dsn", "DB_DSN")
 
+	// OIDC and session env vars
+	_ = v.BindEnv("oidc.client_id", "LIMEXPRESS_OIDC_CLIENT_ID")
+	_ = v.BindEnv("oidc.client_secret", "LIMEXPRESS_OIDC_CLIENT_SECRET")
+	_ = v.BindEnv("oidc.redirect_url", "LIMEXPRESS_OIDC_REDIRECT_URL")
+	_ = v.BindEnv("session.secret", "LIMEXPRESS_SESSION_SECRET")
+
 	// Optional config file
 	v.SetConfigName("config")
 	v.SetConfigType("yaml")
@@ -156,5 +176,7 @@ func (c *Config) LogSummary(logger *zap.Logger) {
 		zap.Int("pricing_models", len(c.Pricing)),
 		zap.Float64("budgets.user_day_usd", c.Budgets.UserDayUSD),
 		zap.Float64("budgets.team_day_usd", c.Budgets.TeamDayUSD),
+		zap.Bool("oidc_client_id_set", c.OIDC.ClientID != ""),
+		zap.Bool("session_secret_set", c.Session.Secret != ""),
 	)
 }
