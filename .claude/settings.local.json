@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go get:*)",
+      "Bash(go:*)",
+      "Bash(sqlc version:*)",
+      "Bash(sqlc generate:*)",
+      "Bash(gh run:*)",
+      "Bash(gh pr:*)",
+      "Bash(git:*)",
+      "Bash(go build:*)",
+      "Bash(echo EXIT: $?:*)",
+      "Bash(GOFLAGS=-mod=mod go get:*)",
+      "Bash(/Users/raj/workspace/github/LImExpress/agents/backend-engineer.md:*)",
+      "Bash(/Users/raj/workspace/github/LImExpress/agents/frontend.md:*)"
+    ]
+  }
+}

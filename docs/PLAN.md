@@ -1,5 +1,50 @@
 # LImExpress — MVP Plan
 
+## Task Status (updated 2026-03-06)
+
+| Task | Description | Status | Branch / PR |
+|------|-------------|--------|-------------|
+| M0-T1 | Go module + repo skeleton | ✅ Done | `chore/foundation` |
+| M0-T2 | DB schema + migrations | ✅ Done | `chore/foundation` |
+| M0-T3 | sqlc config + generated types | ✅ Done | `chore/foundation` |
+| M0-T4 | Config skeleton (viper) | ✅ Done | `chore/foundation` |
+| M0-T5 | CI skeleton | ✅ Done | `chore/foundation` |
+| M1-T1 | Virtual key middleware | ✅ Done | PR #9 merged |
+| M1-T2 | Budget admission | ✅ Done | PR #19 merged |
+| M1-T3 | SSE streaming proxy | ✅ Done | PR #20 merged |
+| M1-T4 | Post-charge accounting | ✅ Done | PR #21 merged |
+| M1-T5 | Prometheus metrics + zap logging | ✅ Done | PR #10 merged |
+| M1-T6 | Analytics query endpoints | 🔲 Not started | — |
+| M2-T1 | Google Workspace OIDC login | ✅ Done | PR #11 merged |
+| M2-T2 | Multi-org context middleware | 🔲 Not started | — |
+| M2-T3 | Key lifecycle endpoints | 🔲 Not started | — |
+| M2-T4 | Dashboard data endpoints | 🔲 Not started | — |
+| M2-T5 | Portal shell + navigation | 🔄 In progress | `feature/e11-portal-shell-v2` |
+| M2-T6 | Login / logout UI | 🔲 Not started | — |
+| M2-T7 | Key management UI | 🔲 Not started | — |
+| M2-T8 | Usage dashboard UI | 🔲 Not started | — |
+| M3-T1 | Dockerfile + K8s manifests | 🔲 Not started | — |
+| M3-T2 | Istio SSE configuration | 🔲 Not started | — |
+| M3-T3 | Prometheus scrape + Datadog log config | 🔲 Not started | — |
+| M3-T4 | Operations docs + runbooks | 🔲 Not started | — |
+| M4-T1 | Security review + SECURITY.md | 🔲 Not started | — |
+| M4-T2 | Test suite (unit + integration) | 🔲 Not started | — |
+| M4-T3 | Load tests | 🔲 Not started | — |
+| M4-T4 | Release checklist | 🔲 Not started | — |
+
+**Legend:** ✅ Done · 🔄 In progress · 🔲 Not started
+
+---
+
+## Progress Summary (as of March 6, 2026)
+
+### Overall status
+- **M0 Foundation:** ✅ Complete (5/5).
+- **M1 Gateway Core:** ✅ 5/6 done (M1-T6 analytics endpoints pending).
+- **M2 Portal:** 🔄 2/8 done (OIDC + portal shell; key lifecycle, org context, UI work pending).
+- **M3 Observability & Ops:** 🔲 Not started (0/4).
+- **M4 Hardening & Release:** 🔲 Not started (0/4).
+
 ## Scope
 
 Build a minimal LLM gateway with:
