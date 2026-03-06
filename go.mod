@@ -5,12 +5,9 @@ go 1.25
 toolchain go1.25.5
 
 require (
-<<<<<<< HEAD
-	github.com/golang-migrate/migrate/v4 v4.19.1
-=======
 	github.com/a-h/templ v0.3.1001
 	github.com/go-chi/chi/v5 v5.2.5
->>>>>>> eb5a579 (M2-T5: portal shell with templ layout, nav, and base page components)
+	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
