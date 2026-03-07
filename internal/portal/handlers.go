@@ -119,57 +119,67 @@ func (h *Handler) usagePageHandler(w http.ResponseWriter, r *http.Request) {
 
 	if h.querier != nil && org != nil {
 		now := time.Now().UTC()
-		from := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, -90)
-		to := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.UTC)
+		startOfToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+		from := startOfToday.AddDate(0, 0, -89)
+		to := startOfToday.AddDate(0, 0, 1)
 
-		if rows, err := h.querier.GetDailyUsageByOrg(r.Context(), db.GetDailyUsageByOrgParams{
+		dailyRows, err := h.querier.GetDailyUsageByOrg(r.Context(), db.GetDailyUsageByOrgParams{
 			OrgID:         org.OrgID,
 			WindowStart:   dashboardToTimestamptz(from),
 			WindowStart_2: dashboardToTimestamptz(to),
-		}); err == nil {
-			daily = make([]DailyRow, 0, len(rows))
-			for _, row := range rows {
-				daily = append(daily, DailyRow{
-					Day:          dashboardDateToString(row.Day),
-					InputTokens:  row.InputTokens,
-					OutputTokens: row.OutputTokens,
-					CostUSD:      dashboardNumericToFloat64(row.CostUsd),
-					RequestCount: row.RequestCount,
-				})
-			}
+		})
+		if err != nil {
+			http.Error(w, "failed to load usage data", http.StatusInternalServerError)
+			return
+		}
+		daily = make([]DailyRow, 0, len(dailyRows))
+		for _, row := range dailyRows {
+			daily = append(daily, DailyRow{
+				Day:          dashboardDateToString(row.Day),
+				InputTokens:  row.InputTokens,
+				OutputTokens: row.OutputTokens,
+				CostUSD:      dashboardNumericToFloat64(row.CostUsd),
+				RequestCount: row.RequestCount,
+			})
 		}
 
-		if rows, err := h.querier.GetTopUsersByOrg(r.Context(), db.GetTopUsersByOrgParams{
+		userRows, err := h.querier.GetTopUsersByOrg(r.Context(), db.GetTopUsersByOrgParams{
 			OrgID:         org.OrgID,
 			WindowStart:   dashboardToTimestamptz(from),
 			WindowStart_2: dashboardToTimestamptz(to),
 			Limit:         10,
-		}); err == nil {
-			topUsers = make([]TopUserRow, 0, len(rows))
-			for _, row := range rows {
-				topUsers = append(topUsers, TopUserRow{
-					Email:         row.Email,
-					TotalCostUSD:  dashboardNumericToFloat64(row.TotalCostUsd),
-					TotalRequests: row.TotalRequests,
-				})
-			}
+		})
+		if err != nil {
+			http.Error(w, "failed to load usage data", http.StatusInternalServerError)
+			return
+		}
+		topUsers = make([]TopUserRow, 0, len(userRows))
+		for _, row := range userRows {
+			topUsers = append(topUsers, TopUserRow{
+				Email:         row.Email,
+				TotalCostUSD:  dashboardNumericToFloat64(row.TotalCostUsd),
+				TotalRequests: row.TotalRequests,
+			})
 		}
 
-		if rows, err := h.querier.GetTopModelsByOrg(r.Context(), db.GetTopModelsByOrgParams{
+		modelRows, err := h.querier.GetTopModelsByOrg(r.Context(), db.GetTopModelsByOrgParams{
 			OrgID:         org.OrgID,
 			WindowStart:   dashboardToTimestamptz(from),
 			WindowStart_2: dashboardToTimestamptz(to),
 			Limit:         10,
-		}); err == nil {
-			topModels = make([]TopModelRow, 0, len(rows))
-			for _, row := range rows {
-				topModels = append(topModels, TopModelRow{
-					Model:         row.Model,
-					Provider:      row.Provider,
-					TotalCostUSD:  dashboardNumericToFloat64(row.TotalCostUsd),
-					TotalRequests: row.TotalRequests,
-				})
-			}
+		})
+		if err != nil {
+			http.Error(w, "failed to load usage data", http.StatusInternalServerError)
+			return
+		}
+		topModels = make([]TopModelRow, 0, len(modelRows))
+		for _, row := range modelRows {
+			topModels = append(topModels, TopModelRow{
+				Model:         row.Model,
+				Provider:      row.Provider,
+				TotalCostUSD:  dashboardNumericToFloat64(row.TotalCostUsd),
+				TotalRequests: row.TotalRequests,
+			})
 		}
 	}
 
