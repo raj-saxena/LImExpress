@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -15,8 +17,6 @@ import (
 	"github.com/limexpress/gateway/internal/config"
 	"github.com/limexpress/gateway/internal/db"
 	"github.com/limexpress/gateway/internal/metrics"
-	"github.com/limexpress/gateway/internal/portal"
-	portalauth "github.com/limexpress/gateway/internal/portal/auth"
 )
 
 func main() {
@@ -50,27 +50,12 @@ func main() {
 	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
+	r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 
-	// Portal routes — only mounted when OIDC is configured.
-	if cfg.OIDC.ClientID != "" && cfg.Session.Secret != "" {
-		authHandler, err := portalauth.New(ctx, portalauth.Config{
-			ClientID:      cfg.OIDC.ClientID,
-			ClientSecret:  cfg.OIDC.ClientSecret,
-			RedirectURL:   cfg.OIDC.RedirectURL,
-			SessionSecret: cfg.Session.Secret,
-		}, querier)
-		if err != nil {
-			logger.Fatal("failed to initialize OIDC handler", zap.Error(err))
-		}
-		portalHandler := portal.New(authHandler, querier)
-		portalHandler.RegisterRoutes(r)
-		logger.Info("portal routes mounted")
-	} else {
-		logger.Warn("OIDC not configured — portal routes disabled",
-			zap.Bool("oidc_client_id_set", cfg.OIDC.ClientID != ""),
-			zap.Bool("session_secret_set", cfg.Session.Secret != ""),
-		)
-	}
+	// UI routes are dynamic:
+	//   1) env/runtime settings complete -> full portal + auth routes
+	//   2) settings missing -> setup form to persist required values in DB
+	r.Mount("/", newUISwitcher(ctx, logger, pool, querier))
 
 	addr := fmt.Sprintf(":%d", cfg.Server.Port)
 	logger.Info("gateway starting",
@@ -78,7 +63,24 @@ func main() {
 		zap.String("log_level", cfg.Log.Level),
 	)
 
-	if err := http.ListenAndServe(addr, r); err != nil {
+	srv := &http.Server{
+		Addr:         addr,
+		Handler:      r,
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
+	}
+
+	go func() {
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		logger.Info("shutdown signal received, stopping server")
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			logger.Error("graceful shutdown failed", zap.Error(err))
+		}
+	}()
+
+	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		logger.Fatal("server error", zap.Error(err))
 	}
 }

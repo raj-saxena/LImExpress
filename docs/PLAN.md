@@ -311,6 +311,7 @@ Can start as docs-only immediately; code review after M1+M2 land.
 
 Blocked by: M1, M2
 
+- Execution plan: `docs/TEST_PLAN.md` (grouped by risk area + 5-agent split).
 - Unit: budget logic (smallest-remaining-wins edge cases), key validation, accounting math
 - Integration (testcontainers): migrations round-trip, key lifecycle DB flow, budget enforcement DB flow
 - Mock-upstream proxy tests: streaming correctness, cancellation, accounting trigger

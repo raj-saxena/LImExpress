@@ -77,6 +77,7 @@ Traffic path: Cloud Armor → Istio Gateway → Gateway Service (this project) �
 - Go 1.25+
 - Postgres running locally
 - `migrate` CLI installed (https://github.com/golang-migrate/migrate)
+- `task` CLI installed (https://taskfile.dev/installation/)
 
 ### 2) Configure environment
 ```bash
@@ -87,9 +88,17 @@ Optional (only needed to enable portal login routes):
 ```bash
 export LIMEXPRESS_OIDC_CLIENT_ID='...'
 export LIMEXPRESS_OIDC_CLIENT_SECRET='...'
-export LIMEXPRESS_OIDC_REDIRECT_URL='http://localhost:8080/portal/auth/callback'
-export LIMEXPRESS_SESSION_SECRET='hex-encoded-32-byte-secret'
+export LIMEXPRESS_OIDC_REDIRECT_URL='https://localhost:8080/auth/callback'
 ```
+
+> **Note:** Portal session cookies are set with `Secure: true`, so the redirect URL **must** use `https://` for login to work in most browsers (cookies are not persisted over plain HTTP except in some browsers for `localhost`). For local dev with plain HTTP, use Chrome or Firefox which may send Secure cookies on `localhost`.
+
+For **local development only**, if these env vars are not set, the app serves a setup page at `/` where you can enter them once and persist them in DB (`runtime_settings` table). **Do not expose this setup page in production or to untrusted networks.** The `POST /setup/config` endpoint only accepts requests from localhost. In production, provision these values exclusively via environment variables or a secure ops process. Resolution order is:
+1. Environment variable value
+2. Database value (pre-seeded by a trusted/authenticated process)
+3. *(Local development only)* Setup page at `/` — accessible from localhost only
+
+`LIMEXPRESS_SESSION_SECRET` is no longer expected from env or setup input. It is auto-generated as a 128-byte random hex string on first boot and stored in `runtime_settings`.
 
 ### 3) Apply DB migrations
 ```bash
@@ -118,3 +127,33 @@ go test ./...
 # DB integration test (requires Docker/Testcontainers)
 INTEGRATION_TESTS=1 go test ./internal/db -run TestDB
 ```
+
+## Taskfile shortcuts
+
+```bash
+# Show available tasks
+task
+
+# Ensure tools/deps are ready
+task deps
+
+# Compile binary
+task build
+
+# Run tests
+task test
+task test:short
+task test:integration
+
+# Migrations (requires DB_DSN)
+task db:migrate
+task db:down
+
+# Run local server
+task run
+
+# Smoke check local endpoints
+task smoke
+```
+
+`task run` now starts/creates a local Postgres Docker container (`limexpress-postgres` on `localhost:54329`), runs migrations, and launches the gateway against that DB automatically.

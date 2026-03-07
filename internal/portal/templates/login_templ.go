@@ -43,7 +43,7 @@ func Login(signedOut bool) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"hero min-h-[70vh]\"><div class=\"hero-content flex-col w-full max-w-sm\"><!-- Logo / branding --><div class=\"text-center mb-2\"><h1 class=\"text-3xl font-bold text-base-content\">LImExpress</h1><p class=\"text-base-content/60 mt-1 text-sm\">LLM API gateway for teams</p></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"hero min-h-[70vh]\"><div class=\"hero-content flex-col w-full max-w-sm\"><!-- Logo / branding --><div class=\"text-center mb-2\"><img src=\"/assets/logo.png\" alt=\"LImExpress logo\" class=\"mx-auto mb-3 h-16 w-auto\"><h1 class=\"text-3xl font-bold text-base-content\">LImExpress</h1><p class=\"text-base-content/60 mt-1 text-sm\">LLM API gateway for teams</p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
