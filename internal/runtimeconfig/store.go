@@ -55,6 +55,9 @@ func (s *Store) SetMany(ctx context.Context, values map[string]string) error {
 			SET value = EXCLUDED.value, updated_at = now()
 		`, k, v)
 		if err != nil {
+			if isUndefinedTable(err) {
+				return errors.New("runtime_settings table not found; run migrations first (migrate -path db/migrations -database $DB_DSN up)")
+			}
 			return err
 		}
 	}
