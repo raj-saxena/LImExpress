@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  build-and-test:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,39 +19,11 @@ jobs:
 
       - name: Set up Task
         uses: arduino/setup-task@v2
-
-      - name: Run CI build-and-test task
-        run: task ci:build-and-test
-
-  sqlc-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
       - name: Install sqlc
         uses: sqlc-dev/setup-sqlc@v4
         with:
           sqlc-version: "1.30.0"
 
-      - name: Set up Task
-        uses: arduino/setup-task@v2
-
-      - name: Run CI sqlc-check task
-        run: task ci:sqlc-check
-
-  templ-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-          cache: true
-
-      - name: Set up Task
-        uses: arduino/setup-task@v2
-
-      - name: Run CI templ-check task
-        run: task ci:templ-check
+      - name: Run unified CI task
+        run: task ci
