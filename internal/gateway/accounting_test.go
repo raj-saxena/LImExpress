@@ -216,8 +216,11 @@ func TestPostChargeAccounting_RecordsUsage(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 
 	q.waitForEvent(t)
-	// Small sleep to let the two upsert calls also complete.
-	time.Sleep(20 * time.Millisecond)
+	require.Eventually(t, func() bool {
+		q.mu.Lock()
+		defer q.mu.Unlock()
+		return len(q.aggHourCalls) == 1 && len(q.aggDayCalls) == 1
+	}, time.Second, 10*time.Millisecond)
 
 	q.mu.Lock()
 	defer q.mu.Unlock()
@@ -270,8 +273,6 @@ func TestPostChargeAccounting_TwoModels(t *testing.T) {
 	req2 = req2.WithContext(middleware.WithTestContext(req2.Context(), kac))
 	inner2.ServeHTTP(rec2, req2)
 	q2.waitForEvent(t)
-
-	time.Sleep(20 * time.Millisecond)
 
 	q.mu.Lock()
 	f1, _ := q.usageEvents[0].CostUsd.Float64Value()
