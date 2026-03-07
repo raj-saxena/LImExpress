@@ -1,6 +1,6 @@
 # LImExpress — MVP Plan
 
-## Task Status (updated 2026-03-06)
+## Task Status (updated 2026-03-07)
 
 | Task | Description | Status | Branch / PR |
 |------|-------------|--------|-------------|
@@ -20,7 +20,7 @@
 | M2-T3 | Key lifecycle endpoints | 🔄 In review | `feature/e9-key-lifecycle` |
 | M2-T4 | Dashboard data endpoints | 🔄 In review | `feature/e10-dashboard-api` |
 | M2-T5 | Portal shell + navigation | 🔄 In review | PR #24 |
-| M2-T6 | Login / logout UI | 🔲 Not started | — |
+| M2-T6 | Login / logout UI | 🔄 In review | PR #27 |
 | M2-T7 | Key management UI | 🔲 Not started | — |
 | M2-T8 | Usage dashboard UI | 🔲 Not started | — |
 | M3-T1 | Dockerfile + K8s manifests | 🔲 Not started | — |
@@ -36,12 +36,12 @@
 
 ---
 
-## Progress Summary (as of March 6, 2026)
+## Progress Summary (as of March 7, 2026)
 
 ### Overall status
 - **M0 Foundation:** ✅ Complete (5/5).
 - **M1 Gateway Core:** 🔄 5/6 done, 1 in review (M1-T6 PR #23).
-- **M2 Portal:** 🔄 2/8 done, 2 in review (M2-T2 PR #22, M2-T5 PR #24; key lifecycle, UI work pending).
+- **M2 Portal:** 🔄 2/8 done, 4 in review (M2-T2 PR #22, M2-T5 PR #24, M2-T6 PR #27; key lifecycle endpoints, dashboard API, UI work pending).
 - **M3 Observability & Ops:** 🔲 Not started (0/4).
 - **M4 Hardening & Release:** 🔲 Not started (0/4).
 
