@@ -3,6 +3,7 @@ package portal
 import (
 	"bytes"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -38,6 +39,7 @@ func New(authHandler *auth.Handler, querier db.Querier) *Handler {
 // Auth + org middleware:
 //   - GET    /portal             → dashboard
 //   - POST   /portal/switch-org  → change active org in session
+//   - GET    /portal/usage       → usage dashboard (last 90 days)
 //   - GET    /portal/keys        → key management UI
 //   - POST   /portal/keys        → create a key (HTMX, returns HTML partial)
 //   - DELETE /portal/keys/{id}   → revoke a key (HTMX, returns 200)
@@ -65,6 +67,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Use(h.authHandler.OrgMiddleware(h.querier))
 		r.Get("/portal", h.indexHandler)
 		r.Post("/portal/switch-org", h.authHandler.SwitchOrgHandler(h.querier))
+		r.Get("/portal/usage", h.usagePageHandler)
 		r.Get("/portal/keys", h.keysPageHandler)
 		r.Post("/portal/keys", h.createKeyHandler)
 		r.Delete("/portal/keys/{id}", h.revokeKeyHandler)
@@ -97,6 +100,99 @@ func (h *Handler) indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	var buf bytes.Buffer
 	if err := templates.Index(userEmail, orgName).Render(r.Context(), &buf); err != nil {
+		http.Error(w, "render error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, _ = buf.WriteTo(w)
+}
+
+// usagePageHandler renders the usage dashboard page with daily usage,
+// top users, and top models for the last 90 days.
+func (h *Handler) usagePageHandler(w http.ResponseWriter, r *http.Request) {
+	userEmail := ""
+	if u, ok := auth.UserFromContext(r.Context()); ok {
+		userEmail = u.Email
+	}
+	orgName := ""
+	var org *auth.OrgContext
+	if o, ok := auth.OrgFromContext(r.Context()); ok {
+		orgName = o.Name
+		org = o
+	}
+
+	var daily []DailyRow
+	var topUsers []TopUserRow
+	var topModels []TopModelRow
+
+	if h.querier != nil && org != nil {
+		now := time.Now().UTC()
+		startOfToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+		from := startOfToday.AddDate(0, 0, -89)
+		to := startOfToday.AddDate(0, 0, 1)
+
+		dailyRows, err := h.querier.GetDailyUsageByOrg(r.Context(), db.GetDailyUsageByOrgParams{
+			OrgID:         org.OrgID,
+			WindowStart:   dashboardToTimestamptz(from),
+			WindowStart_2: dashboardToTimestamptz(to),
+		})
+		if err != nil {
+			http.Error(w, "failed to load usage data", http.StatusInternalServerError)
+			return
+		}
+		daily = make([]DailyRow, 0, len(dailyRows))
+		for _, row := range dailyRows {
+			daily = append(daily, DailyRow{
+				Day:          dashboardDateToString(row.Day),
+				InputTokens:  row.InputTokens,
+				OutputTokens: row.OutputTokens,
+				CostUSD:      dashboardNumericToFloat64(row.CostUsd),
+				RequestCount: row.RequestCount,
+			})
+		}
+
+		userRows, err := h.querier.GetTopUsersByOrg(r.Context(), db.GetTopUsersByOrgParams{
+			OrgID:         org.OrgID,
+			WindowStart:   dashboardToTimestamptz(from),
+			WindowStart_2: dashboardToTimestamptz(to),
+			Limit:         10,
+		})
+		if err != nil {
+			http.Error(w, "failed to load usage data", http.StatusInternalServerError)
+			return
+		}
+		topUsers = make([]TopUserRow, 0, len(userRows))
+		for _, row := range userRows {
+			topUsers = append(topUsers, TopUserRow{
+				Email:         row.Email,
+				TotalCostUSD:  dashboardNumericToFloat64(row.TotalCostUsd),
+				TotalRequests: row.TotalRequests,
+			})
+		}
+
+		modelRows, err := h.querier.GetTopModelsByOrg(r.Context(), db.GetTopModelsByOrgParams{
+			OrgID:         org.OrgID,
+			WindowStart:   dashboardToTimestamptz(from),
+			WindowStart_2: dashboardToTimestamptz(to),
+			Limit:         10,
+		})
+		if err != nil {
+			http.Error(w, "failed to load usage data", http.StatusInternalServerError)
+			return
+		}
+		topModels = make([]TopModelRow, 0, len(modelRows))
+		for _, row := range modelRows {
+			topModels = append(topModels, TopModelRow{
+				Model:         row.Model,
+				Provider:      row.Provider,
+				TotalCostUSD:  dashboardNumericToFloat64(row.TotalCostUsd),
+				TotalRequests: row.TotalRequests,
+			})
+		}
+	}
+
+	var buf bytes.Buffer
+	if err := templates.Usage(userEmail, orgName, daily, topUsers, topModels).Render(r.Context(), &buf); err != nil {
 		http.Error(w, "render error", http.StatusInternalServerError)
 		return
 	}

@@ -1,0 +1,136 @@
+package templates
+
+import "fmt"
+
+// DailyRow holds aggregated daily usage data for the usage dashboard.
+type DailyRow struct {
+	Day          string
+	InputTokens  int64
+	OutputTokens int64
+	CostUSD      float64
+	RequestCount int32
+}
+
+// TopUserRow holds per-user aggregated usage for the usage dashboard.
+type TopUserRow struct {
+	Email         string
+	TotalCostUSD  float64
+	TotalRequests int32
+}
+
+// TopModelRow holds per-model aggregated usage for the usage dashboard.
+type TopModelRow struct {
+	Model         string
+	Provider      string
+	TotalCostUSD  float64
+	TotalRequests int32
+}
+
+// Usage renders the usage dashboard page with daily usage, top users, and top models.
+templ Usage(userEmail, orgName string, daily []DailyRow, topUsers []TopUserRow, topModels []TopModelRow) {
+	@Base("Usage Dashboard", userEmail, orgName) {
+		<div class="mb-6">
+			<h1 class="text-2xl font-bold text-base-content">Usage Dashboard</h1>
+			<p class="text-base-content/60 text-sm mt-1">Last 90 days · updated on page load</p>
+		</div>
+		<!-- Daily Usage -->
+		<div class="card bg-base-100 shadow mb-6">
+			<div class="card-body">
+				<h2 class="card-title text-lg">Daily Usage</h2>
+				<div class="overflow-x-auto">
+					<table class="table table-zebra w-full">
+						<thead>
+							<tr>
+								<th>Date</th>
+								<th class="text-right">Requests</th>
+								<th class="text-right">Input Tokens</th>
+								<th class="text-right">Output Tokens</th>
+								<th class="text-right">Cost (USD)</th>
+							</tr>
+						</thead>
+						<tbody>
+							if len(daily) == 0 {
+								<tr>
+									<td colspan="5" class="text-center text-base-content/50 py-6">No usage data yet</td>
+								</tr>
+							}
+							for _, row := range daily {
+								<tr>
+									<td>{ row.Day }</td>
+									<td class="text-right">{ fmt.Sprintf("%d", row.RequestCount) }</td>
+									<td class="text-right">{ fmt.Sprintf("%d", row.InputTokens) }</td>
+									<td class="text-right">{ fmt.Sprintf("%d", row.OutputTokens) }</td>
+									<td class="text-right">{ fmt.Sprintf("$%.4f", row.CostUSD) }</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<!-- Top Users -->
+		<div class="card bg-base-100 shadow mb-6">
+			<div class="card-body">
+				<h2 class="card-title text-lg">Top Users</h2>
+				<div class="overflow-x-auto">
+					<table class="table table-zebra w-full">
+						<thead>
+							<tr>
+								<th>User</th>
+								<th class="text-right">Requests</th>
+								<th class="text-right">Cost (USD)</th>
+							</tr>
+						</thead>
+						<tbody>
+							if len(topUsers) == 0 {
+								<tr>
+									<td colspan="3" class="text-center text-base-content/50 py-6">No data yet</td>
+								</tr>
+							}
+							for _, row := range topUsers {
+								<tr>
+									<td>{ row.Email }</td>
+									<td class="text-right">{ fmt.Sprintf("%d", row.TotalRequests) }</td>
+									<td class="text-right">{ fmt.Sprintf("$%.4f", row.TotalCostUSD) }</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<!-- Top Models -->
+		<div class="card bg-base-100 shadow mb-6">
+			<div class="card-body">
+				<h2 class="card-title text-lg">Top Models</h2>
+				<div class="overflow-x-auto">
+					<table class="table table-zebra w-full">
+						<thead>
+							<tr>
+								<th>Model</th>
+								<th>Provider</th>
+								<th class="text-right">Requests</th>
+								<th class="text-right">Cost (USD)</th>
+							</tr>
+						</thead>
+						<tbody>
+							if len(topModels) == 0 {
+								<tr>
+									<td colspan="4" class="text-center text-base-content/50 py-6">No data yet</td>
+								</tr>
+							}
+							for _, row := range topModels {
+								<tr>
+									<td>{ row.Model }</td>
+									<td>{ row.Provider }</td>
+									<td class="text-right">{ fmt.Sprintf("%d", row.TotalRequests) }</td>
+									<td class="text-right">{ fmt.Sprintf("$%.4f", row.TotalCostUSD) }</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	}
+}
