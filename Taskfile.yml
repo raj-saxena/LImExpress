@@ -1,0 +1,159 @@
+version: "3"
+
+vars:
+  BIN_DIR: ./bin
+  APP_BIN: ./bin/gateway
+  MIGRATIONS_DIR: ./db/migrations
+  LOCAL_DB_CONTAINER: limexpress-postgres
+  LOCAL_DB_PORT: "54329"
+  LOCAL_DB_USER: postgres
+  LOCAL_DB_PASSWORD: postgres
+  LOCAL_DB_NAME: limexpress
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list-all
+
+  check:tools:
+    desc: Ensure required local tools are installed
+    cmds:
+      - command -v go >/dev/null || (echo "go is required" && exit 1)
+      - 'command -v migrate >/dev/null || (echo "migrate CLI is required: https://github.com/golang-migrate/migrate" && exit 1)'
+      - command -v curl >/dev/null || (echo "curl is required" && exit 1)
+
+  check:docker:
+    desc: Ensure Docker CLI is installed
+    cmds:
+      - command -v docker >/dev/null || (echo "docker is required for local Postgres container tasks" && exit 1)
+
+  deps:
+    desc: Download and verify Go module dependencies
+    deps: [check:tools]
+    cmds:
+      - go mod download
+      - go mod verify
+
+  build:
+    desc: Compile gateway binary
+    deps: [deps]
+    cmds:
+      - mkdir -p {{.BIN_DIR}}
+      - go build -o {{.APP_BIN}} ./cmd/gateway
+
+  db:container:up:
+    desc: Start (or create) local Postgres Docker container for development
+    deps: [check:docker]
+    cmds:
+      - |
+        set -euo pipefail
+        NAME="{{.LOCAL_DB_CONTAINER}}"
+        PORT="{{.LOCAL_DB_PORT}}"
+        USER="{{.LOCAL_DB_USER}}"
+        PASSWORD="{{.LOCAL_DB_PASSWORD}}"
+        DB="{{.LOCAL_DB_NAME}}"
+
+        if docker ps --filter "name=^/${NAME}$" --filter "status=running" --format '{{"{{.Names}}"}}' | grep -qx "$NAME"; then
+          echo "Postgres container '$NAME' is already running"
+        elif docker ps -a --filter "name=^/${NAME}$" --format '{{"{{.Names}}"}}' | grep -qx "$NAME"; then
+          echo "Starting existing Postgres container '$NAME'"
+          docker start "$NAME" >/dev/null
+        else
+          echo "Creating Postgres container '$NAME' on localhost:${PORT}"
+          docker run -d \
+            --name "$NAME" \
+            -e POSTGRES_USER="$USER" \
+            -e POSTGRES_PASSWORD="$PASSWORD" \
+            -e POSTGRES_DB="$DB" \
+            -p "${PORT}:5432" \
+            postgres:17-alpine >/dev/null
+        fi
+
+        echo "Waiting for Postgres readiness..."
+        for _ in $(seq 1 45); do
+          if docker exec "$NAME" pg_isready -U "$USER" >/dev/null 2>&1; then
+            echo "Postgres is ready"
+            exit 0
+          fi
+          sleep 1
+        done
+
+        echo "Postgres container '$NAME' did not become ready in time"
+        exit 1
+
+  run:
+    desc: Start local Postgres container, migrate DB, then run local server
+    deps: [check:tools, db:container:up]
+    cmds:
+      - |
+        set -euo pipefail
+        DB_DSN="postgres://{{.LOCAL_DB_USER}}:{{.LOCAL_DB_PASSWORD}}@localhost:{{.LOCAL_DB_PORT}}/{{.LOCAL_DB_NAME}}?sslmode=disable"
+        echo "Applying migrations to ${DB_DSN}"
+        migrate -path {{.MIGRATIONS_DIR}} -database "$DB_DSN" up
+        echo "Starting gateway with DB_DSN=${DB_DSN}"
+        DB_DSN="$DB_DSN" go run ./cmd/gateway
+
+  test:
+    desc: Run all tests
+    deps: [deps]
+    cmds:
+      - go test ./...
+
+  test:short:
+    desc: Run fast unit-style tests
+    deps: [deps]
+    cmds:
+      - go test -short ./...
+
+  test:integration:
+    desc: Run DB integration tests (Docker/Testcontainers required)
+    deps: [deps]
+    cmds:
+      - INTEGRATION_TESTS=1 go test ./internal/db -run TestDB
+
+  vet:
+    desc: Run go vet
+    deps: [deps]
+    cmds:
+      - go vet ./...
+
+  db:migrate:
+    desc: Apply DB migrations up (requires DB_DSN)
+    deps: [check:tools]
+    preconditions:
+      - sh: '[ -n "${DB_DSN:-}" ]'
+        msg: "DB_DSN is required to run migrations"
+    cmds:
+      - migrate -path {{.MIGRATIONS_DIR}} -database "$DB_DSN" up
+
+  db:down:
+    desc: Roll back all DB migrations (requires DB_DSN)
+    deps: [check:tools]
+    preconditions:
+      - sh: '[ -n "${DB_DSN:-}" ]'
+        msg: "DB_DSN is required to roll back migrations"
+    cmds:
+      - migrate -path {{.MIGRATIONS_DIR}} -database "$DB_DSN" down
+
+  db:reset:
+    desc: Recreate DB schema from scratch (down + up)
+    deps: [check:tools]
+    preconditions:
+      - sh: '[ -n "${DB_DSN:-}" ]'
+        msg: "DB_DSN is required to reset migrations"
+    cmds:
+      - migrate -path {{.MIGRATIONS_DIR}} -database "$DB_DSN" down
+      - migrate -path {{.MIGRATIONS_DIR}} -database "$DB_DSN" up
+
+  smoke:
+    desc: Basic local endpoint checks
+    cmds:
+      - curl -fsS http://localhost:8080/healthz
+      - curl -fsS http://localhost:8080/metrics >/dev/null
+      - echo "smoke checks passed"
+
+  clean:
+    desc: Remove local build artifacts
+    cmds:
+      - rm -rf {{.BIN_DIR}}

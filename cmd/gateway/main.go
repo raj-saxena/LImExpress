@@ -15,8 +15,6 @@ import (
 	"github.com/limexpress/gateway/internal/config"
 	"github.com/limexpress/gateway/internal/db"
 	"github.com/limexpress/gateway/internal/metrics"
-	"github.com/limexpress/gateway/internal/portal"
-	portalauth "github.com/limexpress/gateway/internal/portal/auth"
 )
 
 func main() {
@@ -51,26 +49,10 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	// Portal routes — only mounted when OIDC is configured.
-	if cfg.OIDC.ClientID != "" && cfg.Session.Secret != "" {
-		authHandler, err := portalauth.New(ctx, portalauth.Config{
-			ClientID:      cfg.OIDC.ClientID,
-			ClientSecret:  cfg.OIDC.ClientSecret,
-			RedirectURL:   cfg.OIDC.RedirectURL,
-			SessionSecret: cfg.Session.Secret,
-		}, querier)
-		if err != nil {
-			logger.Fatal("failed to initialize OIDC handler", zap.Error(err))
-		}
-		portalHandler := portal.New(authHandler, querier)
-		portalHandler.RegisterRoutes(r)
-		logger.Info("portal routes mounted")
-	} else {
-		logger.Warn("OIDC not configured — portal routes disabled",
-			zap.Bool("oidc_client_id_set", cfg.OIDC.ClientID != ""),
-			zap.Bool("session_secret_set", cfg.Session.Secret != ""),
-		)
-	}
+	// UI routes are dynamic:
+	//   1) env/runtime settings complete -> full portal + auth routes
+	//   2) settings missing -> setup form to persist required values in DB
+	r.Mount("/", newUISwitcher(ctx, logger, pool, querier))
 
 	addr := fmt.Sprintf(":%d", cfg.Server.Port)
 	logger.Info("gateway starting",
