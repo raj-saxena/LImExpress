@@ -16,11 +16,19 @@ tasks:
     cmds:
       - task --list-all
 
-  check:tools:
-    desc: Ensure required local tools are installed
+  check:go:
+    desc: Ensure Go is installed
     cmds:
       - command -v go >/dev/null || (echo "go is required" && exit 1)
+
+  check:migrate:
+    desc: Ensure migrate CLI is installed
+    cmds:
       - 'command -v migrate >/dev/null || (echo "migrate CLI is required: https://github.com/golang-migrate/migrate" && exit 1)'
+
+  check:curl:
+    desc: Ensure curl is installed
+    cmds:
       - command -v curl >/dev/null || (echo "curl is required" && exit 1)
 
   check:docker:
@@ -30,10 +38,15 @@ tasks:
 
   deps:
     desc: Download and verify Go module dependencies
-    deps: [check:tools]
+    deps: [check:go]
     cmds:
       - go mod download
       - go mod verify
+
+  check:sqlc:
+    desc: Ensure sqlc is installed
+    cmds:
+      - command -v sqlc >/dev/null || (echo "sqlc is required for sqlc tasks" && exit 1)
 
   build:
     desc: Compile gateway binary
@@ -84,7 +97,7 @@ tasks:
 
   run:
     desc: Start local Postgres container, migrate DB, then run local server
-    deps: [check:tools, db:container:up]
+    deps: [check:go, check:migrate, db:container:up]
     cmds:
       - |
         set -euo pipefail
@@ -106,6 +119,12 @@ tasks:
     cmds:
       - go test -short ./...
 
+  test:short:race:
+    desc: Run fast unit-style tests with race detector
+    deps: [deps]
+    cmds:
+      - go test -short -race ./...
+
   test:integration:
     desc: Run DB integration tests (Docker/Testcontainers required)
     deps: [deps]
@@ -118,9 +137,58 @@ tasks:
     cmds:
       - go vet ./...
 
+  gen:sqlc:
+    desc: Regenerate sqlc code
+    deps: [check:sqlc]
+    cmds:
+      - sqlc generate
+
+  check:sqlc:generated:
+    desc: Verify sqlc generated code is up to date
+    deps: [gen:sqlc]
+    cmds:
+      - git diff --exit-code -- internal/db/
+
+  gen:templ:
+    desc: Regenerate templ code
+    deps: [deps]
+    cmds:
+      - go run github.com/a-h/templ/cmd/templ@v0.3.1001 generate ./internal/portal/templates/
+
+  check:templ:generated:
+    desc: Verify templ generated code is up to date
+    deps: [gen:templ]
+    cmds:
+      - git diff --exit-code -- internal/portal/templates/
+
+  ci:build-and-test:
+    desc: CI parity for build + vet + short race tests
+    deps: [deps]
+    cmds:
+      - go build ./...
+      - task vet
+      - task test:short:race
+
+  ci:sqlc-check:
+    desc: CI parity for sqlc generated-code check
+    cmds:
+      - task check:sqlc:generated
+
+  ci:templ-check:
+    desc: CI parity for templ generated-code check
+    cmds:
+      - task check:templ:generated
+
+  ci:
+    desc: Run all CI-equivalent checks locally
+    cmds:
+      - task ci:build-and-test
+      - task ci:sqlc-check
+      - task ci:templ-check
+
   db:migrate:
     desc: Apply DB migrations up (requires DB_DSN)
-    deps: [check:tools]
+    deps: [check:migrate]
     preconditions:
       - sh: '[ -n "${DB_DSN:-}" ]'
         msg: "DB_DSN is required to run migrations"
@@ -129,7 +197,7 @@ tasks:
 
   db:down:
     desc: Roll back all DB migrations (requires DB_DSN)
-    deps: [check:tools]
+    deps: [check:migrate]
     preconditions:
       - sh: '[ -n "${DB_DSN:-}" ]'
         msg: "DB_DSN is required to roll back migrations"
@@ -138,7 +206,7 @@ tasks:
 
   db:reset:
     desc: Recreate DB schema from scratch (down + up)
-    deps: [check:tools]
+    deps: [check:migrate]
     preconditions:
       - sh: '[ -n "${DB_DSN:-}" ]'
         msg: "DB_DSN is required to reset migrations"
@@ -148,6 +216,7 @@ tasks:
 
   smoke:
     desc: Basic local endpoint checks
+    deps: [check:curl]
     cmds:
       - curl -fsS http://localhost:8080/healthz
       - curl -fsS http://localhost:8080/metrics >/dev/null

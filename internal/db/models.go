@@ -33,6 +33,13 @@ type Org struct {
 	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
 }
 
+type RuntimeSetting struct {
+	Key       string             `db:"key" json:"key"`
+	Value     string             `db:"value" json:"value"`
+	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+}
+
 type Team struct {
 	ID        pgtype.UUID        `db:"id" json:"id"`
 	OrgID     pgtype.UUID        `db:"org_id" json:"org_id"`
