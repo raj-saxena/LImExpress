@@ -1,0 +1,149 @@
+package templates
+
+// KeyRow holds display data for one virtual key row.
+type KeyRow struct {
+	ID         string
+	Prefix     string
+	Status     string
+	CreatedAt  string
+	LastUsedAt *string
+	RevokedAt  *string
+}
+
+// Keys renders the API Keys management page.
+// isAdmin controls whether the Create Key button and Revoke actions are shown.
+templ Keys(userEmail string, orgName string, isAdmin bool, keyRows []KeyRow) {
+	@Base("API Keys", userEmail, orgName) {
+		<div class="mb-6 flex items-center justify-between">
+			<div>
+				<h1 class="text-2xl font-bold text-base-content">API Keys</h1>
+				<p class="text-base-content/60 text-sm mt-1">Manage virtual API keys for your organisation</p>
+			</div>
+			if isAdmin {
+				<form
+					hx-post="/portal/keys"
+					hx-target="#key-result"
+					hx-swap="innerHTML"
+				>
+					<button type="submit" class="btn btn-primary">Create Key</button>
+				</form>
+			}
+		</div>
+		<!-- One-time key reveal section -->
+		<div id="key-result" class="mb-6"></div>
+		<!-- Keys table -->
+		<div class="card bg-base-100 shadow">
+			<div class="card-body p-0">
+				if len(keyRows) == 0 {
+					<div class="p-8 text-center text-base-content/50">
+						<p class="text-lg mb-2">No API keys yet</p>
+						if isAdmin {
+							<p class="text-sm">Click <strong>Create Key</strong> to generate your first virtual API key.</p>
+						} else {
+							<p class="text-sm">No API keys have been created for your account.</p>
+						}
+					</div>
+				} else {
+					<div class="overflow-x-auto">
+						<table class="table table-zebra w-full">
+							<thead>
+								<tr>
+									<th>Prefix</th>
+									<th>Status</th>
+									<th>Created</th>
+									<th>Last Used</th>
+									if isAdmin {
+										<th>Actions</th>
+									}
+								</tr>
+							</thead>
+							<tbody>
+								for _, k := range keyRows {
+									@KeyTableRow(k, isAdmin)
+								}
+							</tbody>
+						</table>
+					</div>
+				}
+			</div>
+		</div>
+	}
+}
+
+// KeyTableRow renders a single row in the keys table.
+// Used for both the initial render and HTMX swap on revoke.
+templ KeyTableRow(k KeyRow, isAdmin bool) {
+	<tr id={ "key-row-" + k.ID }>
+		<td class="font-mono text-sm">{ k.Prefix }</td>
+		<td>
+			if k.Status == "active" {
+				<span class="badge badge-success badge-sm">active</span>
+			} else {
+				<span class="badge badge-error badge-sm">{ k.Status }</span>
+			}
+		</td>
+		<td class="text-sm text-base-content/70">{ k.CreatedAt }</td>
+		<td class="text-sm text-base-content/70">
+			if k.LastUsedAt != nil {
+				{ *k.LastUsedAt }
+			} else {
+				<span class="text-base-content/30">—</span>
+			}
+		</td>
+		if isAdmin {
+			<td>
+				if k.Status == "active" {
+					<button
+						class="btn btn-error btn-xs"
+						hx-delete={ "/portal/keys/" + k.ID }
+						hx-confirm="Revoke this key? This action cannot be undone."
+						hx-target={ "#key-row-" + k.ID }
+						hx-swap="outerHTML"
+					>Revoke</button>
+				}
+			</td>
+		}
+	</tr>
+}
+
+// KeyCreatedPartial renders the one-time plaintext key reveal.
+// Shown via HTMX swap after successful key creation.
+templ KeyCreatedPartial(plaintext string, prefix string, keyID string) {
+	<div role="alert" class="alert alert-success mb-4">
+		<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+		</svg>
+		<div class="flex-1">
+			<p class="font-semibold">Key created: <span class="font-mono">{ prefix }</span></p>
+			<p class="text-sm mt-1 font-bold">Copy this key now — it will not be shown again.</p>
+			<div class="mt-3 flex items-center gap-2">
+				<code id={ "key-value-" + keyID } class="block bg-base-200 rounded px-3 py-2 font-mono text-sm break-all flex-1">{ plaintext }</code>
+				<button
+					class="btn btn-sm btn-ghost"
+					onclick={ copyKey(keyID) }
+				>Copy</button>
+			</div>
+		</div>
+		<button
+			class="btn btn-ghost btn-xs btn-circle self-start"
+			aria-label="Dismiss"
+			onclick="this.closest('[role=alert]').remove(); window.location.reload();"
+		>
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+			</svg>
+		</button>
+	</div>
+}
+
+script copyKey(keyID string) {
+	var el = document.getElementById("key-value-" + keyID);
+	if (el) {
+		navigator.clipboard.writeText(el.textContent).catch(function() {
+			var range = document.createRange();
+			range.selectNode(el);
+			window.getSelection().removeAllRanges();
+			window.getSelection().addRange(range);
+		});
+	}
+}

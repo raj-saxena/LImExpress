@@ -23,9 +23,10 @@ func NewKeyLifecycleHandler(q db.Querier) *KeyLifecycleHandler {
 	return &KeyLifecycleHandler{q: q}
 }
 
-// RegisterRoutes mounts M2-T3 endpoints.
+// RegisterRoutes mounts M2-T3 JSON endpoints.
+// Note: GET /portal/keys is handled by the HTML portal handler (keysPageHandler)
+// to serve the key management UI. Only JSON mutation endpoints are registered here.
 func (h *KeyLifecycleHandler) RegisterRoutes(r chi.Router) {
-	r.Get("/portal/keys", h.listKeys)
 	r.Post("/portal/keys", h.createKey)
 	r.Delete("/portal/keys/{id}", h.revokeKey)
 }
