@@ -107,3 +107,17 @@ func TestUsagePage_Unauthenticated(t *testing.T) {
 		t.Fatalf("expected redirect to /auth/login, got %q", loc)
 	}
 }
+
+func TestKeysPage_Unauthenticated(t *testing.T) {
+	r := newTestRouter()
+	req := httptest.NewRequest(http.MethodGet, "/portal/keys", nil)
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusFound {
+		t.Fatalf("expected %d, got %d", http.StatusFound, rec.Code)
+	}
+	if loc := rec.Header().Get("Location"); loc != "/auth/login" {
+		t.Fatalf("expected redirect to /auth/login, got %q", loc)
+	}
+}
