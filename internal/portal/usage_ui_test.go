@@ -2,6 +2,7 @@ package portal
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -131,8 +132,32 @@ func TestUsagePage_EmptyData(t *testing.T) {
 	if !strings.Contains(body, "Usage Dashboard") {
 		t.Errorf("expected 'Usage Dashboard' in body")
 	}
-	// Should contain "No" placeholder text for empty sections.
-	if !strings.Contains(body, "No") {
-		t.Errorf("expected 'No' placeholder text in body for empty sections")
+	if !strings.Contains(body, "No usage data yet") {
+		t.Errorf("expected 'No usage data yet' placeholder in daily usage section")
+	}
+	if !strings.Contains(body, "No data yet") {
+		t.Errorf("expected 'No data yet' placeholder in top users/models sections")
+	}
+	if strings.Contains(body, "2026-03-01") {
+		t.Errorf("did not expect non-empty usage data (e.g., date '2026-03-01') in body for empty sections")
+	}
+}
+
+func TestUsagePage_DBError(t *testing.T) {
+	mock := &usageMock{
+		dailyErr: fmt.Errorf("db connection error"),
+	}
+
+	r := newUsageTestRouter(mock)
+	req := httptest.NewRequest(http.MethodGet, "/portal/usage", nil)
+	req = withPortalContext(req, "org_admin")
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("expected 500, got %d; body: %s", rec.Code, rec.Body.String())
+	}
+	if !strings.Contains(rec.Body.String(), "failed to load usage data") {
+		t.Errorf("expected error message in body")
 	}
 }
