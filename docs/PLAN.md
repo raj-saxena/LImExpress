@@ -40,10 +40,14 @@
 
 ### Overall status
 - **M0 Foundation:** ✅ Complete (5/5).
-- **M1 Gateway Core:** ✅ Complete (6/6).
-- **M2 Portal:** 🔄 6/8 done; M2-T7 (key management UI) and M2-T8 (usage dashboard UI) pending.
+- **M1 Gateway Core:** ✅ Complete (6/6). Virtual key auth, budget enforcement, SSE streaming proxy, post-charge accounting, metrics/logging, and analytics API all merged.
+- **M2 Portal:** 🔄 6/8 done. OIDC login, multi-org middleware, key lifecycle, dashboard API, portal shell, and login/logout UI all merged. M2-T7 (key management UI) and M2-T8 (usage dashboard UI) remaining.
 - **M3 Observability & Ops:** 🔲 Not started (0/4).
 - **M4 Hardening & Release:** 🔲 Not started (0/4).
+
+### Next up
+- **M2-T7** — Key management UI: create key form with one-time plaintext reveal, keys list with status badges and revoke button (HTMX)
+- **M2-T8** — Usage dashboard UI: daily cost/tokens table, top users, top models (pulls from M2-T4 dashboard API)
 
 ## Scope
 
