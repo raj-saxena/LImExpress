@@ -5,11 +5,13 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"html"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,6 +21,10 @@ import (
 	"github.com/limexpress/gateway/internal/runtimeconfig"
 	"go.uber.org/zap"
 )
+
+// setupRefreshTimeout is the maximum time allowed to re-initialize the portal
+// auth provider after setup config is saved.
+const setupRefreshTimeout = 30 * time.Second
 
 type uiSwitcher struct {
 	mu      sync.RWMutex
@@ -187,6 +193,11 @@ func (s *uiSwitcher) newSetupRouter(initialMissing []string) http.Handler {
 	})
 
 	r.Post("/setup/config", func(w http.ResponseWriter, req *http.Request) {
+		if !isLocalRequest(req) {
+			http.Error(w, "setup endpoint is only accessible from localhost", http.StatusForbidden)
+			return
+		}
+
 		if err := req.ParseForm(); err != nil {
 			http.Redirect(w, req, "/?error="+url.QueryEscape("invalid form"), http.StatusSeeOther)
 			return
@@ -201,6 +212,12 @@ func (s *uiSwitcher) newSetupRouter(initialMissing []string) http.Handler {
 			return
 		}
 
+		parsedURL, err := url.Parse(redirectURL)
+		if err != nil || (parsedURL.Scheme != "http" && parsedURL.Scheme != "https") || parsedURL.Host == "" {
+			http.Redirect(w, req, "/?error="+url.QueryEscape("oidc_redirect_url must be an absolute http or https URL"), http.StatusSeeOther)
+			return
+		}
+
 		if err := s.store.SetMany(req.Context(), map[string]string{
 			runtimeconfig.KeyOIDCClientID:     clientID,
 			runtimeconfig.KeyOIDCClientSecret: clientSecret,
@@ -211,7 +228,9 @@ func (s *uiSwitcher) newSetupRouter(initialMissing []string) http.Handler {
 			return
 		}
 
-		s.refresh(req.Context())
+		refreshCtx, cancel := context.WithTimeout(context.Background(), setupRefreshTimeout)
+		defer cancel()
+		s.refresh(refreshCtx)
 		http.Redirect(w, req, "/?saved=1", http.StatusSeeOther)
 	})
 
@@ -258,6 +277,21 @@ func renderSetupPage(missing []string, message string) string {
     <button type="submit" style="padding:10px 14px;">Save Configuration</button>
   </form>
   <p style="margin-top:18px; color:#374151;">A random session secret is generated automatically on first boot and stored in the database.</p>
+  <p style="margin-top:8px; color:#6b7280; font-size:0.875rem;">The setup endpoint only accepts requests from localhost.</p>
 </body>
 </html>`
+}
+
+// isLocalRequest reports whether the request originated from a loopback address.
+// r.RemoteAddr reflects the actual TCP connection and cannot be overridden by
+// client-controlled headers, so this check is reliable when the server is not
+// behind a proxy. The setup endpoint is intentionally localhost-only.
+func isLocalRequest(r *http.Request) bool {
+	host := r.RemoteAddr
+	// Strip port if present.
+	if h, _, err := net.SplitHostPort(host); err == nil {
+		host = h
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
 }

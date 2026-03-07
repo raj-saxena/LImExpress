@@ -54,7 +54,9 @@ func (m *authMockQuerier) UpdateVirtualKeyLastUsed(_ context.Context, arg db.Upd
 
 func mustUUID(s string) pgtype.UUID {
 	var u pgtype.UUID
-	_ = u.Scan(s)
+	if err := u.Scan(s); err != nil {
+		panic("invalid UUID " + s + ": " + err.Error())
+	}
 	return u
 }
 
@@ -135,6 +137,13 @@ func TestVirtualKeyAuth_UnauthorizedCases(t *testing.T) {
 			setup: func(q *authMockQuerier, r *http.Request) {
 				r.Header.Set("Authorization", "Bearer sk_vkey_test")
 				q.getErr = pgx.ErrNoRows
+			},
+		},
+		{
+			name: "db error",
+			setup: func(q *authMockQuerier, r *http.Request) {
+				r.Header.Set("Authorization", "Bearer sk_vkey_test")
+				q.getErr = errors.New("connection reset")
 			},
 		},
 		{

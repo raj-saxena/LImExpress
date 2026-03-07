@@ -88,13 +88,15 @@ Optional (only needed to enable portal login routes):
 ```bash
 export LIMEXPRESS_OIDC_CLIENT_ID='...'
 export LIMEXPRESS_OIDC_CLIENT_SECRET='...'
-export LIMEXPRESS_OIDC_REDIRECT_URL='http://localhost:8080/auth/callback'
+export LIMEXPRESS_OIDC_REDIRECT_URL='https://localhost:8080/auth/callback'
 ```
 
-If OIDC values are not set, the app serves a setup page at `/` where you can enter them once and persist them in DB (`runtime_settings` table). Resolution order is:
+> **Note:** Portal session cookies are set with `Secure: true`, so the redirect URL **must** use `https://` for login to work in most browsers (cookies are not persisted over plain HTTP except in some browsers for `localhost`). For local dev with plain HTTP, use Chrome or Firefox which may send Secure cookies on `localhost`.
+
+For **local development only**, if these env vars are not set, the app serves a setup page at `/` where you can enter them once and persist them in DB (`runtime_settings` table). **Do not expose this setup page in production or to untrusted networks.** The `POST /setup/config` endpoint only accepts requests from localhost. In production, provision these values exclusively via environment variables or a secure ops process. Resolution order is:
 1. Environment variable value
-2. Database value
-3. Setup page prompt
+2. Database value (pre-seeded by a trusted/authenticated process)
+3. *(Local development only)* Setup page at `/` — accessible from localhost only
 
 `LIMEXPRESS_SESSION_SECRET` is no longer expected from env or setup input. It is auto-generated as a 128-byte random hex string on first boot and stored in `runtime_settings`.
 
@@ -147,7 +149,7 @@ task test:integration
 task db:migrate
 task db:down
 
-# Run local server (requires DB_DSN)
+# Run local server
 task run
 
 # Smoke check local endpoints
