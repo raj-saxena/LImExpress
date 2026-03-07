@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/hex"
 	"html"
 	"net/http"
@@ -109,12 +110,12 @@ func (s *uiSwitcher) resolvePortalAuthConfig(ctx context.Context) (portalauth.Co
 	if err != nil {
 		return portalauth.Config{}, nil, err
 	}
-	sessionSecret, err := get("LIMEXPRESS_SESSION_SECRET", runtimeconfig.KeySessionSecret)
+	sessionSecret, err := s.ensureSessionSecret(ctx)
 	if err != nil {
 		return portalauth.Config{}, nil, err
 	}
 
-	missing := make([]string, 0, 4)
+	missing := make([]string, 0, 3)
 	if clientID == "" {
 		missing = append(missing, "LIMEXPRESS_OIDC_CLIENT_ID")
 	}
@@ -124,9 +125,6 @@ func (s *uiSwitcher) resolvePortalAuthConfig(ctx context.Context) (portalauth.Co
 	if redirectURL == "" {
 		missing = append(missing, "LIMEXPRESS_OIDC_REDIRECT_URL")
 	}
-	if sessionSecret == "" {
-		missing = append(missing, "LIMEXPRESS_SESSION_SECRET")
-	}
 
 	return portalauth.Config{
 		ClientID:      clientID,
@@ -134,6 +132,37 @@ func (s *uiSwitcher) resolvePortalAuthConfig(ctx context.Context) (portalauth.Co
 		RedirectURL:   redirectURL,
 		SessionSecret: sessionSecret,
 	}, missing, nil
+}
+
+func (s *uiSwitcher) ensureSessionSecret(ctx context.Context) (string, error) {
+	v, ok, err := s.store.Get(ctx, runtimeconfig.KeySessionSecret)
+	if err != nil {
+		return "", err
+	}
+	if ok && strings.TrimSpace(v) != "" {
+		return strings.TrimSpace(v), nil
+	}
+
+	secret, err := generateHexSecret(128)
+	if err != nil {
+		return "", err
+	}
+	if err := s.store.SetMany(ctx, map[string]string{
+		runtimeconfig.KeySessionSecret: secret,
+	}); err != nil {
+		return "", err
+	}
+
+	s.logger.Info("generated runtime session secret in database")
+	return secret, nil
+}
+
+func generateHexSecret(numBytes int) (string, error) {
+	b := make([]byte, numBytes)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
 }
 
 func (s *uiSwitcher) newSetupRouter(initialMissing []string) http.Handler {
@@ -166,16 +195,9 @@ func (s *uiSwitcher) newSetupRouter(initialMissing []string) http.Handler {
 		clientID := strings.TrimSpace(req.FormValue("oidc_client_id"))
 		clientSecret := strings.TrimSpace(req.FormValue("oidc_client_secret"))
 		redirectURL := strings.TrimSpace(req.FormValue("oidc_redirect_url"))
-		sessionSecret := strings.TrimSpace(req.FormValue("session_secret"))
 
-		if clientID == "" || clientSecret == "" || redirectURL == "" || sessionSecret == "" {
+		if clientID == "" || clientSecret == "" || redirectURL == "" {
 			http.Redirect(w, req, "/?error="+url.QueryEscape("all fields are required"), http.StatusSeeOther)
-			return
-		}
-
-		decoded, err := hex.DecodeString(sessionSecret)
-		if err != nil || len(decoded) < 32 {
-			http.Redirect(w, req, "/?error="+url.QueryEscape("session secret must be hex-encoded and at least 32 bytes"), http.StatusSeeOther)
 			return
 		}
 
@@ -183,7 +205,6 @@ func (s *uiSwitcher) newSetupRouter(initialMissing []string) http.Handler {
 			runtimeconfig.KeyOIDCClientID:     clientID,
 			runtimeconfig.KeyOIDCClientSecret: clientSecret,
 			runtimeconfig.KeyOIDCRedirectURL:  redirectURL,
-			runtimeconfig.KeySessionSecret:    sessionSecret,
 		}); err != nil {
 			s.logger.Error("failed to persist runtime settings", zap.Error(err))
 			http.Redirect(w, req, "/?error="+url.QueryEscape("failed to save settings"), http.StatusSeeOther)
@@ -234,12 +255,9 @@ func renderSetupPage(missing []string, message string) string {
     <label>OIDC Redirect URL
       <input type="url" name="oidc_redirect_url" placeholder="http://localhost:8080/auth/callback" style="width:100%; padding:8px;" required />
     </label>
-    <label>Session Secret (hex-encoded, at least 32 bytes)
-      <input type="password" name="session_secret" style="width:100%; padding:8px;" required />
-    </label>
     <button type="submit" style="padding:10px 14px;">Save Configuration</button>
   </form>
-  <p style="margin-top:18px; color:#374151;">Environment variables override database values when present.</p>
+  <p style="margin-top:18px; color:#374151;">A random session secret is generated automatically on first boot and stored in the database.</p>
 </body>
 </html>`
 }

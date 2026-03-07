@@ -89,13 +89,14 @@ Optional (only needed to enable portal login routes):
 export LIMEXPRESS_OIDC_CLIENT_ID='...'
 export LIMEXPRESS_OIDC_CLIENT_SECRET='...'
 export LIMEXPRESS_OIDC_REDIRECT_URL='http://localhost:8080/auth/callback'
-export LIMEXPRESS_SESSION_SECRET='hex-encoded-32-byte-secret'
 ```
 
-If these 4 env vars are not set, the app now serves a setup page at `/` where you can enter them once and persist them in DB (`runtime_settings` table). Resolution order is:
+If OIDC values are not set, the app serves a setup page at `/` where you can enter them once and persist them in DB (`runtime_settings` table). Resolution order is:
 1. Environment variable value
 2. Database value
 3. Setup page prompt
+
+`LIMEXPRESS_SESSION_SECRET` is no longer expected from env or setup input. It is auto-generated as a 128-byte random hex string on first boot and stored in `runtime_settings`.
 
 ### 3) Apply DB migrations
 ```bash
