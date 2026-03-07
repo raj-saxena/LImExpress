@@ -32,7 +32,7 @@
 | M4-T3 | Load tests | 🔲 Not started | — |
 | M4-T4 | Release checklist | 🔲 Not started | — |
 
-**Legend:** ✅ Done · 🔄 In progress · 🔲 Not started
+**Legend:** ✅ Done · 🔲 Not started
 
 ---
 
@@ -41,7 +41,7 @@
 ### Overall status
 - **M0 Foundation:** ✅ Complete (5/5).
 - **M1 Gateway Core:** ✅ Complete (6/6). Virtual key auth, budget enforcement, SSE streaming proxy, post-charge accounting, metrics/logging, and analytics API all merged.
-- **M2 Portal:** 🔄 6/8 done. OIDC login, multi-org middleware, key lifecycle, dashboard API, portal shell, and login/logout UI all merged. M2-T7 (key management UI) and M2-T8 (usage dashboard UI) remaining.
+- **M2 Portal:** 6/8 done (✅ T1–T6 merged, 🔲 T7–T8 pending). OIDC login, multi-org middleware, key lifecycle, dashboard API, portal shell, and login/logout UI all merged. M2-T7 (key management UI) and M2-T8 (usage dashboard UI) remaining.
 - **M3 Observability & Ops:** 🔲 Not started (0/4).
 - **M4 Hardening & Release:** 🔲 Not started (0/4).
 
