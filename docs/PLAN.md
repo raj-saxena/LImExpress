@@ -1,6 +1,6 @@
 # LImExpress — MVP Plan
 
-## Task Status (updated 2026-03-06)
+## Task Status (updated 2026-03-07)
 
 | Task | Description | Status | Branch / PR |
 |------|-------------|--------|-------------|
@@ -14,13 +14,13 @@
 | M1-T3 | SSE streaming proxy | ✅ Done | PR #20 merged |
 | M1-T4 | Post-charge accounting | ✅ Done | PR #21 merged |
 | M1-T5 | Prometheus metrics + zap logging | ✅ Done | PR #10 merged |
-| M1-T6 | Analytics query endpoints | 🔄 In review | PR #23 |
+| M1-T6 | Analytics query endpoints | ✅ Done | PR #23 merged |
 | M2-T1 | Google Workspace OIDC login | ✅ Done | PR #11 merged |
-| M2-T2 | Multi-org context middleware | 🔄 In review | PR #22 |
-| M2-T3 | Key lifecycle endpoints | 🔄 In review | `feature/e9-key-lifecycle` |
-| M2-T4 | Dashboard data endpoints | 🔄 In review | `feature/e10-dashboard-api` |
-| M2-T5 | Portal shell + navigation | 🔄 In review | PR #24 |
-| M2-T6 | Login / logout UI | 🔲 Not started | — |
+| M2-T2 | Multi-org context middleware | ✅ Done | PR #22 merged |
+| M2-T3 | Key lifecycle endpoints | ✅ Done | PR #25 merged |
+| M2-T4 | Dashboard data endpoints | ✅ Done | PR #26 merged |
+| M2-T5 | Portal shell + navigation | ✅ Done | PR #24 merged |
+| M2-T6 | Login / logout UI | ✅ Done | PR #27 merged |
 | M2-T7 | Key management UI | 🔲 Not started | — |
 | M2-T8 | Usage dashboard UI | 🔲 Not started | — |
 | M3-T1 | Dockerfile + K8s manifests | 🔲 Not started | — |
@@ -36,12 +36,12 @@
 
 ---
 
-## Progress Summary (as of March 6, 2026)
+## Progress Summary (as of March 7, 2026)
 
 ### Overall status
 - **M0 Foundation:** ✅ Complete (5/5).
-- **M1 Gateway Core:** 🔄 5/6 done, 1 in review (M1-T6 PR #23).
-- **M2 Portal:** 🔄 2/8 done, 2 in review (M2-T2 PR #22, M2-T5 PR #24; key lifecycle, UI work pending).
+- **M1 Gateway Core:** ✅ Complete (6/6).
+- **M2 Portal:** 🔄 6/8 done (M2-T7 key management UI, M2-T8 dashboard UI pending).
 - **M3 Observability & Ops:** 🔲 Not started (0/4).
 - **M4 Hardening & Release:** 🔲 Not started (0/4).
 
