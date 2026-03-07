@@ -31,6 +31,7 @@ type uiSwitcher struct {
 	current http.Handler
 
 	logger  *zap.Logger
+	pool    *pgxpool.Pool
 	querier db.Querier
 	store   *runtimeconfig.Store
 }
@@ -38,6 +39,7 @@ type uiSwitcher struct {
 func newUISwitcher(ctx context.Context, logger *zap.Logger, pool *pgxpool.Pool, querier db.Querier) *uiSwitcher {
 	s := &uiSwitcher{
 		logger:  logger,
+		pool:    pool,
 		querier: querier,
 		store:   runtimeconfig.New(pool),
 	}
@@ -68,7 +70,7 @@ func (s *uiSwitcher) refresh(ctx context.Context) {
 		return
 	}
 
-	authHandler, err := portalauth.New(ctx, authCfg, s.querier)
+	authHandler, err := portalauth.New(ctx, authCfg, s.pool, s.querier)
 	if err != nil {
 		s.logger.Error("failed to initialize portal auth", zap.Error(err))
 		s.setHandler(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

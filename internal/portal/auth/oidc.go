@@ -7,10 +7,12 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"strings"
 
 	gooidc "github.com/coreos/go-oidc/v3/oidc"
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/oauth2"
 
 	"github.com/limexpress/gateway/internal/db"
@@ -19,7 +21,7 @@ import (
 const (
 	sessionName   = "limexpress_session"
 	sessionMaxAge = 8 * 60 * 60 // 8 hours in seconds
-	stateLen      = 16           // random bytes for CSRF state
+	stateLen      = 16          // random bytes for CSRF state
 )
 
 // Config holds OIDC configuration.
@@ -36,11 +38,12 @@ type Handler struct {
 	oauth2   oauth2.Config
 	store    *sessions.CookieStore
 	db       db.Querier
+	pool     *pgxpool.Pool
 }
 
 // New initializes the OIDC provider by fetching Google's discovery document.
 // Returns an error if the provider cannot be initialized or the session secret is invalid.
-func New(ctx context.Context, cfg Config, querier db.Querier) (*Handler, error) {
+func New(ctx context.Context, cfg Config, pool *pgxpool.Pool, querier db.Querier) (*Handler, error) {
 	secretBytes, err := hex.DecodeString(cfg.SessionSecret)
 	if err != nil {
 		return nil, fmt.Errorf("auth: session secret must be hex-encoded: %w", err)
@@ -74,6 +77,7 @@ func New(ctx context.Context, cfg Config, querier db.Querier) (*Handler, error) 
 		},
 		store: store,
 		db:    querier,
+		pool:  pool,
 	}, nil
 }
 
@@ -172,6 +176,10 @@ func (h *Handler) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "database error", http.StatusInternalServerError)
 		return
 	}
+	if err := h.bootstrapFirstOrgIfNeeded(r.Context(), user.ID, claims.Email); err != nil {
+		http.Error(w, "database error", http.StatusInternalServerError)
+		return
+	}
 
 	userIDStr := uuidToString(user.ID)
 	sess.Values["user_id"] = userIDStr
@@ -182,6 +190,58 @@ func (h *Handler) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/portal", http.StatusFound)
+}
+
+// bootstrapFirstOrgIfNeeded ensures the first authenticated user becomes
+// org_admin in a bootstrap org when the system has no orgs yet.
+func (h *Handler) bootstrapFirstOrgIfNeeded(ctx context.Context, userID pgtype.UUID, email string) error {
+	if h.pool == nil {
+		return nil
+	}
+
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	// Serialize bootstrap across concurrent logins.
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(918273645);`); err != nil {
+		return err
+	}
+
+	var orgCount int64
+	if err := tx.QueryRow(ctx, `SELECT COUNT(*) FROM orgs;`).Scan(&orgCount); err != nil {
+		return err
+	}
+	if orgCount > 0 {
+		return tx.Commit(ctx)
+	}
+
+	orgName := bootstrapOrgName(email)
+
+	var orgID pgtype.UUID
+	if err := tx.QueryRow(ctx, `INSERT INTO orgs (name) VALUES ($1) RETURNING id;`, orgName).Scan(&orgID); err != nil {
+		return err
+	}
+
+	if _, err := tx.Exec(ctx, `
+		INSERT INTO memberships (user_id, org_id, team_id, role)
+		VALUES ($1, $2, NULL, 'org_admin')
+		ON CONFLICT (user_id, org_id, team_id) DO UPDATE SET role = EXCLUDED.role
+	`, userID, orgID); err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
+}
+
+func bootstrapOrgName(email string) string {
+	parts := strings.Split(email, "@")
+	if len(parts) == 2 && parts[1] != "" {
+		return parts[1] + " org"
+	}
+	return "Default organisation"
 }
 
 // LogoutHandler clears the session cookie and redirects to the login page.
