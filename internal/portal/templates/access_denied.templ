@@ -1,0 +1,30 @@
+package templates
+
+// AccessDenied renders the access-denied page shown when a user has no org memberships.
+// userEmail is used to populate the nav (user is authenticated, just has no org).
+templ AccessDenied(userEmail string) {
+	@Base("Access Denied", userEmail, "") {
+		<div class="hero min-h-[60vh]">
+			<div class="hero-content text-center flex-col max-w-md">
+				<!-- Icon -->
+				<div class="mb-4">
+					<div class="w-16 h-16 rounded-full bg-warning/20 flex items-center justify-center mx-auto">
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+						</svg>
+					</div>
+				</div>
+				<h1 class="text-2xl font-bold text-base-content">No organisation access</h1>
+				<p class="text-base-content/60 mt-2">
+					Your account (<span class="font-medium text-base-content">{ userEmail }</span>) is not a member of any organisation.
+					Contact your administrator to request access.
+				</p>
+				<div class="mt-6 flex gap-3 justify-center">
+					<form method="POST" action="/auth/logout">
+						<button type="submit" class="btn btn-outline btn-sm">Sign out</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	}
+}

@@ -1,11 +1,10 @@
 package templates
 
-// Nav renders the top navigation bar with org switcher placeholder and mobile hamburger.
-// userEmail is empty when the user is not authenticated.
-templ Nav(userEmail string) {
+// Nav renders the top navigation bar.
+// userEmail is empty when unauthenticated. orgName is the active organisation name.
+templ Nav(userEmail string, orgName string) {
 	<nav class="navbar bg-base-100 shadow-lg px-4">
 		<div class="navbar-start">
-			<!-- Hamburger for mobile (checkbox-driven daisyUI drawer trigger) -->
 			<div class="dropdown lg:hidden">
 				<label tabindex="0" class="btn btn-ghost btn-circle">
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -20,7 +19,6 @@ templ Nav(userEmail string) {
 			</div>
 			<a href="/portal" class="btn btn-ghost text-xl font-bold">LImExpress</a>
 		</div>
-		<!-- Desktop nav links -->
 		<div class="navbar-center hidden lg:flex">
 			<ul class="menu menu-horizontal px-1 gap-1">
 				<li><a href="/portal" class="rounded-lg">Dashboard</a></li>
@@ -29,22 +27,24 @@ templ Nav(userEmail string) {
 			</ul>
 		</div>
 		<div class="navbar-end gap-2">
-			if userEmail != "" {
-				<!-- Org switcher placeholder — backend wiring deferred -->
+			if orgName != "" {
+				<!-- Org switcher (real org name from OrgContext) -->
 				<div class="dropdown dropdown-end">
 					<label tabindex="0" class="btn btn-ghost btn-sm normal-case font-medium">
-						Acme Corp
+						{ orgName }
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
 						</svg>
 					</label>
 					<ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-[1] mt-1">
 						<li class="menu-title"><span>Switch Organisation</span></li>
-						<li><a class="active">Acme Corp</a></li>
+						<li><a class="active">{ orgName }</a></li>
 						<li><a>— more coming soon —</a></li>
 					</ul>
 				</div>
-				<!-- User email + sign-out -->
+			}
+			if userEmail != "" {
+				<!-- User avatar + sign-out -->
 				<div class="dropdown dropdown-end">
 					<label tabindex="0" class="btn btn-ghost btn-circle avatar placeholder">
 						<div class="bg-primary text-primary-content rounded-full w-8">

@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 // Base is the root layout used by every portal page.
 // It loads Tailwind + daisyUI and HTMX from CDN (acceptable for MVP).
-func Base(title string, user string) templ.Component {
+func Base(title string, user string, orgName string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -44,11 +44,11 @@ func Base(title string, user string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " \u2014 LImExpress</title><!-- Tailwind + daisyUI via CDN for MVP --><link href=\"https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css\" rel=\"stylesheet\"><script src=\"https://cdn.tailwindcss.com\"></script><!-- HTMX --><script src=\"https://unpkg.com/htmx.org@1.9.12\"></script></head><body class=\"min-h-screen bg-base-200\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " — LImExpress</title><!-- Tailwind + daisyUI via CDN for MVP --><link href=\"https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css\" rel=\"stylesheet\"><script src=\"https://cdn.tailwindcss.com\"></script><!-- HTMX --><script src=\"https://unpkg.com/htmx.org@1.9.12\"></script></head><body class=\"min-h-screen bg-base-200\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = Nav(user).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Nav(user, orgName).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -77,6 +77,12 @@ func New(ctx context.Context, cfg Config, querier db.Querier) (*Handler, error) 
 	}, nil
 }
 
+// NewWithStore creates a Handler with a pre-configured session store and querier.
+// Only used in tests where a real OIDC provider is not available.
+func NewWithStore(store *sessions.CookieStore, querier db.Querier) *Handler {
+	return &Handler{store: store, db: querier}
+}
+
 // LoginHandler redirects to Google for authentication.
 // Generates a random state parameter stored in session to prevent CSRF.
 func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -178,14 +184,15 @@ func (h *Handler) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/portal", http.StatusFound)
 }
 
-// LogoutHandler clears the session cookie and redirects to /.
+// LogoutHandler clears the session cookie and redirects to the login page.
+// The ?signed_out=1 param causes loginPageHandler to show a "signed out" flash.
 func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	sess, err := h.store.Get(r, sessionName)
 	if err == nil {
 		sess.Options.MaxAge = -1
 		_ = sess.Save(r, w)
 	}
-	http.Redirect(w, r, "/", http.StatusFound)
+	http.Redirect(w, r, "/auth/login-page?signed_out=1", http.StatusFound)
 }
 
 // RequireAuth is chi middleware that checks for a valid session.
