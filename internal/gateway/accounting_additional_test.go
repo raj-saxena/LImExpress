@@ -29,7 +29,11 @@ func TestPostChargeAccounting_UnknownModelStillRecordsUsageWithZeroCost(t *testi
 	assert.Equal(t, http.StatusOK, rec.Code)
 
 	q.waitForEvent(t)
-	time.Sleep(20 * time.Millisecond)
+	require.Eventually(t, func() bool {
+		q.mu.Lock()
+		defer q.mu.Unlock()
+		return len(q.aggHourCalls) == 1 && len(q.aggDayCalls) == 1
+	}, time.Second, 10*time.Millisecond)
 
 	q.mu.Lock()
 	defer q.mu.Unlock()
