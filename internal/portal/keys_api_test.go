@@ -3,7 +3,6 @@ package portal
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -60,51 +59,10 @@ func (m *keyLifecycleMock) RevokeVirtualKey(_ context.Context, arg db.RevokeVirt
 	return m.revokeErr
 }
 
-func TestKeyLifecycle_ListKeys_AdminSeesOrg(t *testing.T) {
-	mock := &keyLifecycleMock{
-		listByOrgRows: []db.ListKeysByOrgRow{{
-			ID:        mustUUID("00000000-0000-0000-0000-000000000001"),
-			UserID:    mustUUID("00000000-0000-0000-0000-000000000002"),
-			Prefix:    "sk_vkey_abcd",
-			Status:    "active",
-			CreatedAt: mustTS("2026-03-06T10:00:00Z"),
-		}},
-	}
-
-	r := chi.NewRouter()
-	NewKeyLifecycleHandler(mock).RegisterRoutes(r)
-
-	req := httptest.NewRequest(http.MethodGet, "/portal/keys", nil)
-	req = withPortalContext(req, "org_admin")
-	rec := httptest.NewRecorder()
-	r.ServeHTTP(rec, req)
-
-	assert.Equal(t, http.StatusOK, rec.Code)
-	assert.Equal(t, mustUUID("11111111-1111-1111-1111-111111111111"), mock.listByOrgOrgID)
-
-	var body struct {
-		Data []portalKey `json:"data"`
-	}
-	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
-	require.Len(t, body.Data, 1)
-	assert.Equal(t, "00000000-0000-0000-0000-000000000001", body.Data[0].ID)
-	assert.Equal(t, "00000000-0000-0000-0000-000000000002", body.Data[0].UserID)
-}
-
-func TestKeyLifecycle_ListKeys_MemberSeesOwn(t *testing.T) {
-	mock := &keyLifecycleMock{listByUserRows: []db.ListVirtualKeysByUserRow{}}
-	r := chi.NewRouter()
-	NewKeyLifecycleHandler(mock).RegisterRoutes(r)
-
-	req := httptest.NewRequest(http.MethodGet, "/portal/keys", nil)
-	req = withPortalContext(req, "member")
-	rec := httptest.NewRecorder()
-	r.ServeHTTP(rec, req)
-
-	assert.Equal(t, http.StatusOK, rec.Code)
-	assert.Equal(t, mustUUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), mock.listByUserParam.UserID)
-	assert.Equal(t, mustUUID("11111111-1111-1111-1111-111111111111"), mock.listByUserParam.OrgID)
-}
+// Note: TestKeyLifecycle_ListKeys_AdminSeesOrg, TestKeyLifecycle_ListKeys_MemberSeesOwn,
+// and TestKeyLifecycle_List_InternalError have been removed.
+// GET /portal/keys is now handled by the HTML portal handler (keysPageHandler);
+// list behaviour is tested in keys_ui_test.go.
 
 func TestKeyLifecycle_Create_AdminOnly(t *testing.T) {
 	mock := &keyLifecycleMock{}
@@ -190,19 +148,6 @@ func TestKeyLifecycle_Revoke_BadID(t *testing.T) {
 	r.ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
-}
-
-func TestKeyLifecycle_List_InternalError(t *testing.T) {
-	mock := &keyLifecycleMock{listByOrgErr: errors.New("db down")}
-	r := chi.NewRouter()
-	NewKeyLifecycleHandler(mock).RegisterRoutes(r)
-
-	req := httptest.NewRequest(http.MethodGet, "/portal/keys", nil)
-	req = withPortalContext(req, "org_admin")
-	rec := httptest.NewRecorder()
-	r.ServeHTTP(rec, req)
-
-	assert.Equal(t, http.StatusInternalServerError, rec.Code)
 }
 
 func withPortalContext(req *http.Request, role string) *http.Request {
