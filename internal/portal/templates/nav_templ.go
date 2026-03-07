@@ -31,7 +31,7 @@ func Nav(userEmail string, orgName string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<nav class=\"navbar bg-base-100 shadow-lg px-4\"><div class=\"navbar-start\"><div class=\"dropdown lg:hidden\"><label tabindex=\"0\" class=\"btn btn-ghost btn-circle\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4 6h16M4 12h16M4 18h16\"></path></svg></label><ul tabindex=\"0\" class=\"menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52\"><li><a href=\"/portal\">Dashboard</a></li><li><a href=\"/portal/keys\">API Keys</a></li><li><a href=\"/portal/usage\">Usage</a></li></ul></div><a href=\"/portal\" class=\"btn btn-ghost text-xl font-bold\">LImExpress</a></div><div class=\"navbar-center hidden lg:flex\"><ul class=\"menu menu-horizontal px-1 gap-1\"><li><a href=\"/portal\" class=\"rounded-lg\">Dashboard</a></li><li><a href=\"/portal/keys\" class=\"rounded-lg\">API Keys</a></li><li><a href=\"/portal/usage\" class=\"rounded-lg\">Usage</a></li></ul></div><div class=\"navbar-end gap-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<nav class=\"navbar bg-base-100 shadow-lg px-4\"><div class=\"navbar-start\"><div class=\"dropdown lg:hidden\"><label tabindex=\"0\" class=\"btn btn-ghost btn-circle\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4 6h16M4 12h16M4 18h16\"></path></svg></label><ul tabindex=\"0\" class=\"menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52\"><li><a href=\"/portal\">Dashboard</a></li><li><a href=\"/portal/keys\">API Keys</a></li><li><a href=\"/portal/usage\">Usage</a></li></ul></div><a href=\"/portal\" class=\"btn btn-ghost gap-2 normal-case\"><img src=\"/assets/logo.png\" alt=\"LImExpress logo\" class=\"h-8 w-auto\"> <span class=\"text-xl font-bold\">LImExpress</span></a></div><div class=\"navbar-center hidden lg:flex\"><ul class=\"menu menu-horizontal px-1 gap-1\"><li><a href=\"/portal\" class=\"rounded-lg\">Dashboard</a></li><li><a href=\"/portal/keys\" class=\"rounded-lg\">API Keys</a></li><li><a href=\"/portal/usage\" class=\"rounded-lg\">Usage</a></li></ul></div><div class=\"navbar-end gap-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -43,7 +43,7 @@ func Nav(userEmail string, orgName string) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(orgName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/nav.templ`, Line: 34, Col: 15}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/nav.templ`, Line: 37, Col: 15}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -56,7 +56,7 @@ func Nav(userEmail string, orgName string) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(orgName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/nav.templ`, Line: 41, Col: 37}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/nav.templ`, Line: 44, Col: 37}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -75,7 +75,7 @@ func Nav(userEmail string, orgName string) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(string([]rune(userEmail)[:1]))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/nav.templ`, Line: 51, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/nav.templ`, Line: 54, Col: 60}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -88,7 +88,7 @@ func Nav(userEmail string, orgName string) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(userEmail)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/nav.templ`, Line: 55, Col: 71}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/nav.templ`, Line: 58, Col: 71}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {

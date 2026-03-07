@@ -260,6 +260,9 @@ func renderSetupPage(missing []string, message string) string {
   <title>LImExpress Setup</title>
 </head>
 <body style="font-family: sans-serif; max-width: 760px; margin: 2rem auto; line-height: 1.5;">
+  <div style="margin-bottom: 1rem;">
+    <img src="/assets/logo.png" alt="LImExpress logo" style="max-width: 220px; height: auto;" />
+  </div>
   <h1>LImExpress Setup</h1>
   <p>Portal auth settings are not configured yet. Enter the values below to save them in the database.</p>
   <p><strong>Missing:</strong> ` + missingList + `</p>

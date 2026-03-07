@@ -27,7 +27,6 @@ func TestPostChargeAccounting_UnknownModelStillRecordsUsageWithZeroCost(t *testi
 
 	inner.ServeHTTP(rec, req)
 	assert.Equal(t, http.StatusOK, rec.Code)
-
 	require.Eventually(t, func() bool {
 		q.mu.Lock()
 		defer q.mu.Unlock()
