@@ -105,7 +105,7 @@ tasks:
         echo "Applying migrations to ${DB_DSN}"
         migrate -path {{.MIGRATIONS_DIR}} -database "$DB_DSN" up
         echo "Starting gateway with DB_DSN=${DB_DSN}"
-        DB_DSN="$DB_DSN" go run ./cmd/gateway
+        DB_DSN="$DB_DSN" exec go run ./cmd/gateway
 
   test:
     desc: Run all tests
