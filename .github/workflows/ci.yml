@@ -40,3 +40,19 @@ jobs:
         run: |
           sqlc generate
           git diff --exit-code -- internal/db/
+
+  templ-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Verify templ generated code is up to date
+        run: |
+          go run github.com/a-h/templ/cmd/templ@v0.3.1001 generate ./internal/portal/templates/
+          git diff --exit-code -- internal/portal/templates/
