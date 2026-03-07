@@ -1,6 +1,7 @@
 package portal
 
 import (
+	"bytes"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -66,10 +67,13 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 // Reads ?signed_out=1 to show a "signed out" success flash.
 func (h *Handler) loginPageHandler(w http.ResponseWriter, r *http.Request) {
 	signedOut := r.URL.Query().Get("signed_out") == "1"
-	component := templates.Login(signedOut)
-	if err := component.Render(r.Context(), w); err != nil {
+	var buf bytes.Buffer
+	if err := templates.Login(signedOut).Render(r.Context(), &buf); err != nil {
 		http.Error(w, "render error", http.StatusInternalServerError)
+		return
 	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, _ = buf.WriteTo(w)
 }
 
 // indexHandler renders the portal dashboard.
@@ -83,10 +87,13 @@ func (h *Handler) indexHandler(w http.ResponseWriter, r *http.Request) {
 	if o, ok := auth.OrgFromContext(r.Context()); ok {
 		orgName = o.Name
 	}
-	component := templates.Index(userEmail, orgName)
-	if err := component.Render(r.Context(), w); err != nil {
+	var buf bytes.Buffer
+	if err := templates.Index(userEmail, orgName).Render(r.Context(), &buf); err != nil {
 		http.Error(w, "render error", http.StatusInternalServerError)
+		return
 	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, _ = buf.WriteTo(w)
 }
 
 // accessDeniedHandler renders the access-denied page for authenticated users
@@ -96,8 +103,11 @@ func (h *Handler) accessDeniedHandler(w http.ResponseWriter, r *http.Request) {
 	if u, ok := auth.UserFromContext(r.Context()); ok {
 		userEmail = u.Email
 	}
-	component := templates.AccessDenied(userEmail)
-	if err := component.Render(r.Context(), w); err != nil {
+	var buf bytes.Buffer
+	if err := templates.AccessDenied(userEmail).Render(r.Context(), &buf); err != nil {
 		http.Error(w, "render error", http.StatusInternalServerError)
+		return
 	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, _ = buf.WriteTo(w)
 }
