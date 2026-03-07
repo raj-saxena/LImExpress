@@ -1,25 +1,21 @@
 package templates
 
 // Index is the portal home/dashboard shown after login.
-templ Index(userEmail string) {
-	@Base("Dashboard", userEmail) {
-		<!-- Page header -->
+templ Index(userEmail string, orgName string) {
+	@Base("Dashboard", userEmail, orgName) {
 		<div class="mb-6">
 			<h1 class="text-2xl font-bold text-base-content">Dashboard</h1>
 			<p class="text-base-content/60 text-sm mt-1">Overview of your LImExpress usage</p>
 		</div>
-		<!-- daisyUI stats component: must use <div class="stats"> wrapper with <div class="stat"> children -->
 		<div class="stats stats-vertical lg:stats-horizontal shadow w-full mb-8 bg-base-100">
 			@StatCard("API Keys", "—", "key")
 			@StatCard("Today's Cost", "$—", "chart-bar")
 			@StatCard("Requests Today", "—", "arrow-path")
 		</div>
-		<!-- Usage card with skeleton placeholder -->
 		<div class="card bg-base-100 shadow">
 			<div class="card-body">
 				<h2 class="card-title text-lg">Usage — last 30 days</h2>
 				<p class="text-base-content/60 text-sm mb-4">Data will appear here once you start making requests.</p>
-				<!-- Chart area skeleton -->
 				<div class="w-full h-40 bg-base-200 rounded-lg flex items-center justify-center">
 					<span class="text-base-content/30 text-sm">Chart coming soon</span>
 				</div>
@@ -30,7 +26,6 @@ templ Index(userEmail string) {
 
 // StatCard renders a single daisyUI stat child element.
 // Must be placed inside a <div class="stats"> wrapper (see Index above).
-// icon is a placeholder identifier; icon rendering can be wired in a later task.
 templ StatCard(label string, value string, icon string) {
 	<div class="stat">
 		<div class="stat-title">{ label }</div>

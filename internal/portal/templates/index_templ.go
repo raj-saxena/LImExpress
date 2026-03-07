@@ -9,7 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 // Index is the portal home/dashboard shown after login.
-func Index(userEmail string) templ.Component {
+func Index(userEmail string, orgName string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -46,25 +46,25 @@ func Index(userEmail string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = StatCard("API Keys", "\u2014", "key").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = StatCard("API Keys", "—", "key").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = StatCard("Today\u2019s Cost", "$\u2014", "chart-bar").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = StatCard("Today's Cost", "$—", "chart-bar").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = StatCard("Requests Today", "\u2014", "arrow-path").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = StatCard("Requests Today", "—", "arrow-path").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"card bg-base-100 shadow\"><div class=\"card-body\"><h2 class=\"card-title text-lg\">Usage \u2014 last 30 days</h2><p class=\"text-base-content/60 text-sm mb-4\">Data will appear here once you start making requests.</p><div class=\"w-full h-40 bg-base-200 rounded-lg flex items-center justify-center\"><span class=\"text-base-content/30 text-sm\">Chart coming soon</span></div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"card bg-base-100 shadow\"><div class=\"card-body\"><h2 class=\"card-title text-lg\">Usage — last 30 days</h2><p class=\"text-base-content/60 text-sm mb-4\">Data will appear here once you start making requests.</p><div class=\"w-full h-40 bg-base-200 rounded-lg flex items-center justify-center\"><span class=\"text-base-content/30 text-sm\">Chart coming soon</span></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = Base("Dashboard", userEmail).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Base("Dashboard", userEmail, orgName).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -74,7 +74,6 @@ func Index(userEmail string) templ.Component {
 
 // StatCard renders a single daisyUI stat child element.
 // Must be placed inside a <div class="stats"> wrapper (see Index above).
-// icon is a placeholder identifier; icon rendering can be wired in a later task.
 func StatCard(label string, value string, icon string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -103,7 +102,7 @@ func StatCard(label string, value string, icon string) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/index.templ`, Line: 39, Col: 33}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/index.templ`, Line: 31, Col: 33}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -116,7 +115,7 @@ func StatCard(label string, value string, icon string) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(value)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/index.templ`, Line: 40, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/portal/templates/index.templ`, Line: 32, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {

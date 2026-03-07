@@ -1,9 +1,9 @@
 package templates
 
 // Login renders the sign-in page for unauthenticated users.
-// Real OIDC auth is wired in a later task; this is the shell.
-templ Login() {
-	@Base("Sign in", "") {
+// signedOut is true when the user has just logged out (shows a flash banner).
+templ Login(signedOut bool) {
+	@Base("Sign in", "", "") {
 		<div class="hero min-h-[70vh]">
 			<div class="hero-content flex-col w-full max-w-sm">
 				<!-- Logo / branding -->
@@ -11,6 +11,9 @@ templ Login() {
 					<h1 class="text-3xl font-bold text-base-content">LImExpress</h1>
 					<p class="text-base-content/60 mt-1 text-sm">LLM API gateway for teams</p>
 				</div>
+				if signedOut {
+					@Flash("success", "You have been signed out.")
+				}
 				<!-- Sign-in card -->
 				<div class="card bg-base-100 shadow-xl w-full">
 					<div class="card-body gap-6">

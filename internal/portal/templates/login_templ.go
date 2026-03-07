@@ -9,8 +9,8 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 // Login renders the sign-in page for unauthenticated users.
-// Real OIDC auth is wired in a later task; this is the shell.
-func Login() templ.Component {
+// signedOut is true when the user has just logged out (shows a flash banner).
+func Login(signedOut bool) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -43,13 +43,23 @@ func Login() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"hero min-h-[70vh]\"><div class=\"hero-content flex-col w-full max-w-sm\"><div class=\"text-center mb-2\"><h1 class=\"text-3xl font-bold text-base-content\">LImExpress</h1><p class=\"text-base-content/60 mt-1 text-sm\">LLM API gateway for teams</p></div><div class=\"card bg-base-100 shadow-xl w-full\"><div class=\"card-body gap-6\"><div class=\"text-center\"><h2 class=\"text-xl font-semibold text-base-content\">Sign in to your account</h2><p class=\"text-base-content/60 text-sm mt-1\">Use your Google Workspace account</p></div><a href=\"/auth/login\" class=\"flex items-center justify-center gap-3 w-full border border-[#dadce0] rounded-lg px-4 py-2.5 bg-white hover:bg-gray-50 transition-colors duration-150 shadow-sm\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 18 18\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z\" fill=\"#4285F4\"></path><path d=\"M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z\" fill=\"#34A853\"></path><path d=\"M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z\" fill=\"#FBBC05\"></path><path d=\"M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z\" fill=\"#EA4335\"></path></svg><span class=\"text-sm font-medium text-[#3c4043]\">Sign in with Google</span></a><p class=\"text-center text-xs text-base-content/40\">By signing in you agree to your organisation&#39;s access policy.</p></div></div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"hero min-h-[70vh]\"><div class=\"hero-content flex-col w-full max-w-sm\"><!-- Logo / branding --><div class=\"text-center mb-2\"><h1 class=\"text-3xl font-bold text-base-content\">LImExpress</h1><p class=\"text-base-content/60 mt-1 text-sm\">LLM API gateway for teams</p></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if signedOut {
+				templ_7745c5c3_Err = Flash("success", "You have been signed out.").Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<!-- Sign-in card --><div class=\"card bg-base-100 shadow-xl w-full\"><div class=\"card-body gap-6\"><div class=\"text-center\"><h2 class=\"text-xl font-semibold text-base-content\">Sign in to your account</h2><p class=\"text-base-content/60 text-sm mt-1\">Use your Google Workspace account</p></div><!-- Google sign-in button with brand styling --><a href=\"/auth/login\" class=\"flex items-center justify-center gap-3 w-full border border-[#dadce0] rounded-lg px-4 py-2.5 bg-white hover:bg-gray-50 transition-colors duration-150 shadow-sm\"><!-- Google logo SVG (official G icon) --><svg width=\"18\" height=\"18\" viewBox=\"0 0 18 18\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z\" fill=\"#4285F4\"></path> <path d=\"M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z\" fill=\"#34A853\"></path> <path d=\"M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z\" fill=\"#FBBC05\"></path> <path d=\"M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z\" fill=\"#EA4335\"></path></svg> <span class=\"text-sm font-medium text-[#3c4043]\">Sign in with Google</span></a><p class=\"text-center text-xs text-base-content/40\">By signing in you agree to your organisation's access policy.</p></div></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = Base("Sign in", "").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Base("Sign in", "", "").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

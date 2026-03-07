@@ -15,6 +15,8 @@ import (
 	"github.com/limexpress/gateway/internal/config"
 	"github.com/limexpress/gateway/internal/db"
 	"github.com/limexpress/gateway/internal/metrics"
+	"github.com/limexpress/gateway/internal/portal"
+	portalauth "github.com/limexpress/gateway/internal/portal/auth"
 )
 
 func main() {
@@ -34,18 +36,41 @@ func main() {
 
 	cfg.LogSummary(logger)
 
-	// Initialize DB pool
+	// Initialize DB pool.
 	pool, err := db.NewPool(ctx, cfg.DB.DSN)
 	if err != nil {
 		logger.Fatal("failed to connect to database", zap.Error(err))
 	}
 	defer pool.Close()
 
+	querier := db.New(pool)
+
 	r := chi.NewRouter()
 	r.Get("/metrics", promhttp.Handler().ServeHTTP)
 	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
+
+	// Portal routes — only mounted when OIDC is configured.
+	if cfg.OIDC.ClientID != "" && cfg.Session.Secret != "" {
+		authHandler, err := portalauth.New(ctx, portalauth.Config{
+			ClientID:      cfg.OIDC.ClientID,
+			ClientSecret:  cfg.OIDC.ClientSecret,
+			RedirectURL:   cfg.OIDC.RedirectURL,
+			SessionSecret: cfg.Session.Secret,
+		}, querier)
+		if err != nil {
+			logger.Fatal("failed to initialize OIDC handler", zap.Error(err))
+		}
+		portalHandler := portal.New(authHandler, querier)
+		portalHandler.RegisterRoutes(r)
+		logger.Info("portal routes mounted")
+	} else {
+		logger.Warn("OIDC not configured — portal routes disabled",
+			zap.Bool("oidc_client_id_set", cfg.OIDC.ClientID != ""),
+			zap.Bool("session_secret_set", cfg.Session.Secret != ""),
+		)
+	}
 
 	addr := fmt.Sprintf(":%d", cfg.Server.Port)
 	logger.Info("gateway starting",

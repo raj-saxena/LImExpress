@@ -2,7 +2,7 @@ package templates
 
 // Base is the root layout used by every portal page.
 // It loads Tailwind + daisyUI and HTMX from CDN (acceptable for MVP).
-templ Base(title string, user string) {
+templ Base(title string, user string, orgName string) {
 	<!DOCTYPE html>
 	<html lang="en" data-theme="corporate">
 		<head>
@@ -16,11 +16,8 @@ templ Base(title string, user string) {
 			<script src="https://unpkg.com/htmx.org@1.9.12"></script>
 		</head>
 		<body class="min-h-screen bg-base-200">
-			@Nav(user)
-			<!-- Flash message region: server-rendered flashes appear here via HTMX OOB or direct render -->
-			<div id="flash-region" class="container mx-auto px-4 pt-4 max-w-7xl">
-				<!-- Flash components are injected here by handlers using Flash(kind, msg) -->
-			</div>
+			@Nav(user, orgName)
+			<div id="flash-region" class="container mx-auto px-4 pt-4 max-w-7xl"></div>
 			<main class="container mx-auto px-4 py-6 max-w-7xl">
 				{ children... }
 			</main>
