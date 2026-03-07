@@ -21,8 +21,8 @@
 | M2-T4 | Dashboard data endpoints | ✅ Done | PR #26 merged |
 | M2-T5 | Portal shell + navigation | ✅ Done | PR #24 merged |
 | M2-T6 | Login / logout UI | ✅ Done | PR #27 merged |
-| M2-T7 | Key management UI | 🔲 Not started | — |
-| M2-T8 | Usage dashboard UI | 🔲 Not started | — |
+| M2-T7 | Key management UI | ✅ Done | PR #32 merged |
+| M2-T8 | Usage dashboard UI | ✅ Done | PR #28 merged |
 | M3-T1 | Dockerfile + K8s manifests | 🔲 Not started | — |
 | M3-T2 | Istio SSE configuration | 🔲 Not started | — |
 | M3-T3 | Prometheus scrape + Datadog log config | 🔲 Not started | — |
@@ -41,7 +41,7 @@
 ### Overall status
 - **M0 Foundation:** ✅ Complete (5/5).
 - **M1 Gateway Core:** ✅ Complete (6/6).
-- **M2 Portal:** 🔄 6/8 done (M2-T7 key management UI, M2-T8 dashboard UI pending).
+- **M2 Portal:** ✅ Complete (8/8).
 - **M3 Observability & Ops:** 🔲 Not started (0/4).
 - **M4 Hardening & Release:** 🔲 Not started (0/4).
 

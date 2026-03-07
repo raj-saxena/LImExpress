@@ -12,7 +12,9 @@
       "Bash(echo EXIT: $?:*)",
       "Bash(GOFLAGS=-mod=mod go get:*)",
       "Bash(/Users/raj/workspace/github/LImExpress/agents/backend-engineer.md:*)",
-      "Bash(/Users/raj/workspace/github/LImExpress/agents/frontend.md:*)"
+      "Bash(/Users/raj/workspace/github/LImExpress/agents/frontend.md:*)",
+      "Bash(templ version:*)",
+      "Bash(ls:*)"
     ]
   }
 }

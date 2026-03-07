@@ -70,3 +70,51 @@ Traffic path: Cloud Armor → Istio Gateway → Gateway Service (this project) �
 	•	Rolling (desired) but MVP implementation will be fixed hour/day windows.
 	•	Smallest remaining wins:
 	•	Admission is allowed only if both user and team budgets allow; effective remaining is min(user_remaining, team_remaining).
+
+## Run Locally
+
+### 1) Prerequisites
+- Go 1.25+
+- Postgres running locally
+- `migrate` CLI installed (https://github.com/golang-migrate/migrate)
+
+### 2) Configure environment
+```bash
+export DB_DSN='postgres://postgres:postgres@localhost:5432/limexpress?sslmode=disable'
+```
+
+Optional (only needed to enable portal login routes):
+```bash
+export LIMEXPRESS_OIDC_CLIENT_ID='...'
+export LIMEXPRESS_OIDC_CLIENT_SECRET='...'
+export LIMEXPRESS_OIDC_REDIRECT_URL='http://localhost:8080/portal/auth/callback'
+export LIMEXPRESS_SESSION_SECRET='hex-encoded-32-byte-secret'
+```
+
+### 3) Apply DB migrations
+```bash
+migrate -path db/migrations -database "$DB_DSN" up
+```
+
+### 4) Start the server
+```bash
+go run ./cmd/gateway
+```
+
+### 5) Smoke test locally
+```bash
+curl -i http://localhost:8080/healthz
+curl -i http://localhost:8080/metrics
+```
+
+### 6) Run tests
+```bash
+# Fast unit-style run
+go test -short ./...
+
+# Full default test run
+go test ./...
+
+# DB integration test (requires Docker/Testcontainers)
+INTEGRATION_TESTS=1 go test ./internal/db -run TestDB
+```
